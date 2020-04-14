@@ -22,6 +22,10 @@ TCanvas *c1 = new TCanvas("c1","c1",800,800);
 
 float xmin = 20.3;
 float xmax = 20.8;
+//float xmin = 19.8;
+//float xmax = 21.0;
+
+
 float ymin = 22.8;
 float ymax = 24.2;
 int dut = 12;
@@ -63,6 +67,8 @@ public :
    Float_t         gaus_chi2[4];
    Float_t         xIntercept;
    Float_t         yIntercept;
+   Float_t         xResidBack;
+   Float_t         yResidBack;
    Float_t         xSlope;
    Float_t         ySlope;
    Float_t         x_dut[13];
@@ -102,6 +108,8 @@ public :
    TBranch        *b_gaus_chi2;   //!
    TBranch        *b_xIntercept;   //!
    TBranch        *b_yIntercept;   //!
+   TBranch        *b_xResidBack;   //!
+   TBranch        *b_yResidBack;   //!
    TBranch        *b_xSlope;   //!
    TBranch        *b_ySlope;   //!
    TBranch        *b_x_dut;   //!
@@ -118,12 +126,16 @@ public :
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
-   virtual void     Loop();
+   virtual void     Loop(std::string cfg);
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
    virtual int      n_hits();
-   virtual void     xpos(int ch1,int ch2,int ch3);
-   virtual void     xpos_weight(int ch1,int ch2,int ch3);
+   virtual void     charge_sharing(std::string cfg, int ch1,int ch2,int ch3);
+   virtual void     xpos_lookup(   std::string cfg, int ch1, int ch2, int ch3);
+   virtual void     xpos_weight(   std::string cfg, int ch1, int ch2, int ch3);
+   virtual void     xpos_single(   std::string cfg, int ch1, int ch2, int ch3);
+   virtual void     time_res(      std::string cfg, int ch1, int ch2, int ch3);
+   virtual void     make_t0corr(   std::string cfg, int ch);
    virtual void     makeProfiles();
    virtual void     charge_ratio(std::string cat, int ch1, int ch2);
    virtual void     charge_fraction(std::string cat, int ch1, int ch2, int ch3);
@@ -216,6 +228,8 @@ void Analysis::Init(TTree *tree)
    fChain->SetBranchAddress("gaus_chi2", gaus_chi2, &b_gaus_chi2);
    fChain->SetBranchAddress("xIntercept", &xIntercept, &b_xIntercept);
    fChain->SetBranchAddress("yIntercept", &yIntercept, &b_yIntercept);
+   fChain->SetBranchAddress("xResidBack", &xResidBack, &b_xResidBack);
+   fChain->SetBranchAddress("yResidBack", &yResidBack, &b_yResidBack);
    fChain->SetBranchAddress("xSlope", &xSlope, &b_xSlope);
    fChain->SetBranchAddress("ySlope", &ySlope, &b_ySlope);
    fChain->SetBranchAddress("x_dut", x_dut, &b_x_dut);

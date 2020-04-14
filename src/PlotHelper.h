@@ -483,11 +483,11 @@ class PlotHelper {
     c1->Clear();
     h->Draw(drawopt);
     c1->SetLogy(logy);
-    //deal with overflow here
-    h->SetBinContent(h->GetNbinsX(), h->GetBinContent(h->GetNbinsX() + 1) + h->GetBinContent(h->GetNbinsX()));
-    h->SetBinContent(h->GetNbinsX() + 1, 0);
+    //deal with overflow & underflow here
+    //h->SetBinContent(h->GetNbinsX(), h->GetBinContent(h->GetNbinsX() + 1) + h->GetBinContent(h->GetNbinsX()));
+    //h->SetBinContent(h->GetNbinsX() + 1, 0);
+    //h->SetBinContent(1, h->GetBinContent(0) + h->GetBinContent(1));
     if(norm) h->Scale(1.0/h->Integral());
-    h->SetBinContent(1, h->GetBinContent(0) + h->GetBinContent(1));
     //h->SetBinError(h->GetNbinsX(), sqrt(pow(h->GetBinError(h->GetNbinsX() + 1), 2) + pow(h->GetBinError(h->GetNbinsX()),2)));
     if(doPng)c1->Print(Form((norm ? "%s/%s_norm.png" : "%s/%s.png"), plotdir.c_str(), h->GetName()));
     if(doEps)c1->Print(Form((norm ? "%s/%s_norm.eps" : "%s/%s.eps"), plotdir.c_str(), h->GetName()));

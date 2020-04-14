@@ -4,6 +4,8 @@
 #include <TStyle.h>
 #include <TCanvas.h>
 #include "xmeasure.C"
+#include "timeres.C"
+#include "chargesharing.C"
 
 
 
@@ -71,7 +73,7 @@ void Analysis::makeProfiles()
 		}
 		return;
 }
-void Analysis::Loop()
+void Analysis::Loop(std::string cfg)
 {
 
 	
@@ -101,25 +103,40 @@ void Analysis::Loop()
 		if (y_dut[dut] < ymin) continue;
 		if (x_dut[dut] > xmax) continue;
 		if (y_dut[dut] > ymax) continue;
+		if (abs(yResidBack) > 500) continue;
+		if (abs(xResidBack) > 500) continue;
+
+		// photek
+		if (amp[3] < 50  ) continue;
+		if (amp[3] > 250 ) continue;
+
+
 
 
 		int nhits = n_hits();
 		if ( nhits == 2 )
 		{
 			//std::cout << "2 HITS" << std::endl;
-			if (amp[0] > thresh && amp[1] > thresh) xpos_weight(0,1);
-			if (amp[0] > thresh && amp[2] > thresh) xpos_weight(0,2);
-			if (amp[1] > thresh && amp[2] > thresh) xpos_weight(1,2);
+			if (amp[0] > thresh && amp[1] > thresh) { xpos_weight(cfg,0,1); time_res(cfg,0,1); charge_sharing(cfg,0,1);}
+			if (amp[0] > thresh && amp[2] > thresh) { xpos_weight(cfg,0,2); time_res(cfg,0,2); charge_sharing(cfg,0,2);}
+			if (amp[1] > thresh && amp[2] > thresh) { xpos_weight(cfg,1,2); time_res(cfg,1,2); charge_sharing(cfg,1,2);}
 
 		}
 		else if (nhits == 3){
-			xpos_weight(0,1,2);
-			xpos(0,1,2);
+			xpos_single(cfg,0,1,2);
+			xpos_weight(cfg,0,1,2);
+			xpos_lookup(cfg,0,1,2);
+
+			time_res(cfg,0,1,2);
+			charge_sharing(cfg,0,1,2);
 		}
 		// try any combination of two hits
-		if (amp[0] > thresh && amp[1] > thresh) xpos(0,1);
-		if (amp[0] > thresh && amp[2] > thresh) xpos(0,2);
-		if (amp[1] > thresh && amp[2] > thresh) xpos(1,2);
+		if (amp[0] > thresh) make_t0corr(cfg,0);
+		if (amp[1] > thresh) make_t0corr(cfg,1);
+		if (amp[2] > thresh) make_t0corr(cfg,2);
+		//if (amp[0] > thresh && amp[1] > thresh) xpos_lookup(cfg,0,1);
+		//if (amp[0] > thresh && amp[2] > thresh) xpos_lookup(cfg,0,2);
+		//if (amp[1] > thresh && amp[2] > thresh) xpos_lookup(cfg,1,2);
 
 
 	  
@@ -129,7 +146,10 @@ void Analysis::Loop()
 int main(int argc, char* argv[]){
 
 	// defaults 
-	TFile *file = TFile::Open("skims/data.root");
+	std::string cfg = "cfg_4_13_12";
+	//std::string cfg = "cfg_6_5_11";
+
+	TFile *file = TFile::Open(Form("skims/%s.root",cfg.c_str()));
 	TTree *tree = (TTree*)file->Get("pulse");
 
 	gROOT->SetBatch();
@@ -138,9 +158,9 @@ int main(int argc, char* argv[]){
 
 	// Do analysis 
 	Analysis analysis(tree);
-	analysis.Loop();
+	analysis.Loop(cfg);
 
-	TFile *out = TFile::Open("hists.root","RECREATE");
+	TFile *out = TFile::Open(Form("output/hists_%s.root",cfg.c_str()),"RECREATE");
 	out->cd();
 	plotter.DrawAll1D(c1);
 	plotter.DrawAll2D(c1);

@@ -12,28 +12,52 @@ TFile *file_prof = TFile::Open("profiles/profiles_safe.root");
 
 // start with 02
 
-float xcenter(int ch)
+float xcenter(int ch_name)
+{
+	float xcenter = -99;
+    if      (ch_name==14)  xcenter = 20.85;
+    else if (ch_name== 3)  xcenter = 20.75;
+    else if (ch_name==13)  xcenter = 20.65;
+    else if (ch_name== 4)  xcenter = 20.55;
+    else if (ch_name==12)  xcenter = 20.45;
+    else if (ch_name== 5)  xcenter = 20.35;
+    else if (ch_name==11)  xcenter = 20.25;
+    else if (ch_name== 6)  xcenter = 20.15;
+    return xcenter;
+}
+float xcenter(std::string cfg, int ch)
 {
 	float x = -99;
-	if (ch==0) x = 20.55;//4
-	else if (ch==1) x = 20.65;//13
-	else if (ch==2) x = 20.45;// 12
+	if ("cfg_4_13_12" == cfg) 
+	{
+		if (ch==0) x = 20.55;//4
+		else if (ch==1) x = 20.65;//13
+		else if (ch==2) x = 20.45;// 12		
+	}
+	else if ("cfg_6_5_11" == cfg )
+	{
+		if (ch==0) x = 20.15;//6
+		else if (ch==1) x = 20.35;// 5
+		else if (ch==2) x = 20.25;// 11	
+	}
 	return x;
 }
-float fit_xmin(std::vector<int> channels){
+float fit_xmin(std::string cfg, std::vector<int> channels){
 
 	float min = 99;
 	for (auto ch : channels){
-		if (xcenter(ch) < min) min = xcenter(ch);
+		if (xcenter(cfg,ch) < min) min = xcenter(cfg,ch);
 	}
+	//std::cout << "min " << min << std::endl;
 	return min;
 }
-float fit_xmax(std::vector<int> channels){
+float fit_xmax(std::string cfg, std::vector<int> channels){
 
 	float max = 0;
 	for (auto ch : channels){
-		if (xcenter(ch) > max) max = xcenter(ch);
+		if (xcenter(cfg,ch) > max) max = xcenter(cfg,ch);
 	}
+	//std::cout << "max " << max << std::endl;
 	return max;
 }
 
@@ -64,7 +88,7 @@ float get_x_from_cr(TH1F *hist, float cf, float min, float max)
 	return xpos;
 
 }
-void Analysis::xpos(int ch1,int ch2,int ch3=-1)
+void Analysis::xpos_lookup(std::string cfg, int ch1,int ch2,int ch3=-1)
 {
 	if ( ch3 ==-1 )// two channel hit
 	{
@@ -81,8 +105,8 @@ void Analysis::xpos(int ch1,int ch2,int ch3=-1)
 
 		// get range...
 		//std::cout << "finding xrange " << std::endl;
-		float min = fit_xmin({ch1,ch2});
-		float max = fit_xmax({ch1,ch2});
+		float min = fit_xmin(cfg,{ch1,ch2});
+		float max = fit_xmax(cfg,{ch1,ch2});
 		//std::cout << min << " " << max <<  std::endl;
 
 		// get hist
@@ -106,11 +130,9 @@ void Analysis::xpos(int ch1,int ch2,int ch3=-1)
 		//}
 		//std::cout << cf << " " << diff << " " << xpos << " " <<  x_dut[dut] << std::endl;
 		if ( x_dut[dut] > min && x_dut[dut] < max ){
-			plotter.Plot2D(Form("two_hit_xmeas_xtrack_%i_%i",ch1,ch2),  ";x tracker [mm]; x measured [mm]", x_dut[dut], xpos, 50, min-0.05, max+0.05, 50, min-0.05, max+0.05);
-			plotter.Plot1D(Form("two_hit_xdiff_%i_%i",ch1,ch2),  ";x tracker - x measured [mm];", x_dut[dut] - xpos, 50, -0.3, 0.3);			
+			plotter.Plot2D(Form("xmeas_two_lookup_xmeas_xtrack_%i_%i",ch1,ch2),  ";x tracker [mm]; x measured [mm]", x_dut[dut],  xpos, 100, min-0.05, max+0.05, 100, min-0.05, max+0.05);
+			plotter.Plot1D(Form("xmeas_two_lookup_xdiff_%i_%i",ch1,ch2),          ";x tracker - x measured [mm];"  , x_dut[dut] - xpos, 50, -0.3, 0.3);			
 		}
-
-
 
 		return ;
 
@@ -148,45 +170,81 @@ void Analysis::xpos(int ch1,int ch2,int ch3=-1)
 
 		//std::cout << cf << " " << diff << " " << xpos << " " <<  x_dut[dut] << std::endl;
 		if ( x_dut[dut] > min && x_dut[dut] < max ){
-			plotter.Plot2D(Form("three_hit_xmeas_xtrack_%i_%i",ch1,ch2),  ";x tracker [mm]; x measured [mm]", x_dut[dut], xpos_final, 50, min-0.05, max+0.05, 50, min-0.05, max+0.05);
-			plotter.Plot1D(Form("three_hit_xdiff_%i_%i",ch1,ch2),  ";x tracker - x measured [mm];", x_dut[dut] - xpos_final, 50, -0.3, 0.3);			
+			plotter.Plot2D(Form("xmeas_three_lookup_xmeas_xtrack_%i_%i",ch1,ch2),  ";x tracker [mm]; x measured [mm]", x_dut[dut], xpos_final, 100, min-0.05, max+0.05, 100, min-0.05, max+0.05);
+			plotter.Plot1D(Form("xmeas_three_lookup_xdiff_%i_%i",ch1,ch2),  ";x tracker - x measured [mm];", x_dut[dut] - xpos_final, 50, -0.3, 0.3);			
 		}
 		
 		return ;
 
 	}
 }
-void Analysis::xpos_weight(int ch1,int ch2,int ch3=-1)
+void Analysis::xpos_single(std::string cfg, int ch1, int ch2, int ch3=-1)
 {
 
 	//std::cout << cf << " " << diff << " " << xpos << " " <<  x_dut[dut] << std::endl;
 	if (ch3 == -1){
 		
-		float min = fit_xmin({ch1,ch2});
-		float max = fit_xmax({ch1,ch2});
+		float min = fit_xmin(cfg,{ch1,ch2});
+		float max = fit_xmax(cfg,{ch1,ch2});
 
+		int max_ch = amp[ch1] > amp[ch2] ? ch1 : ch2;
 
-		float xpos = (amp[ch1]*xcenter(ch1)+amp[ch2]*xcenter(ch2))/(amp[ch1]+amp[ch2]);
+		float xpos = xcenter(cfg,max_ch); //(amp[ch1]*xcenter(ch1)+amp[ch2]*xcenter(ch2))/(amp[ch1]+amp[ch2]);
 
 		if ( x_dut[dut] > min && x_dut[dut] < max ){
-		plotter.Plot2D(Form("two_hitweighted_xmeas_xtrack_%i_%i",ch1,ch2),  ";x tracker [mm]; x measured [mm]", x_dut[dut], xpos, 50, min-0.05, max+0.05, 50, min-0.05, max+0.05);
-		plotter.Plot1D(Form("two_hitweighted_xdiff_%i_%i",ch1,ch2),  ";x tracker - x measured [mm];", x_dut[dut] - xpos, 50, -0.3, 0.3);			
+		plotter.Plot2D(Form("xmeas_two_highestamp_xmeas_xtrack_%i_%i",ch1,ch2),  ";x tracker [mm]; x measured [mm]", x_dut[dut], xpos, 100, min-0.05, max+0.05, 100, min-0.05, max+0.05);
+		plotter.Plot1D(Form("xmeas_two_highestamp_xdiff_%i_%i",ch1,ch2),  ";x tracker - x measured [mm];", x_dut[dut] - xpos, 50, -0.3, 0.3);			
 		}
 	}
 	else {
 
-		float min = 20.4;//fit_xmin({ch1,ch2,ch3});
-		float max = 20.7;//fit_xmax({ch1,ch2,ch3});
+		float min = 19.8; // for large plot
+    	float max = 21.8; // for large plot
 
-		float xpos = (amp[ch1]*xcenter(ch1)+amp[ch2]*xcenter(ch2)+amp[ch3]*xcenter(ch3))/(amp[ch1]+amp[ch2]+amp[ch3]);
+    	int max_ch_tmp = amp[ch1] > amp[ch2] ? ch1 : ch2;
+		int max_ch  = amp[max_ch_tmp] > amp[ch3] ? max_ch_tmp : ch3;
+
+		float xpos = xcenter(cfg,max_ch); //(amp[ch1]*xcenter(ch1)+amp[ch2]*xcenter(ch2))/(amp[ch1]+amp[ch2]);
 
 		if ( x_dut[dut] > min && x_dut[dut] < max ){
-		plotter.Plot2D(Form("three_hitweighted_xmeas_xtrack"),  ";x tracker [mm]; x measured [mm]", x_dut[dut], xpos , 50, min-0.05, max+0.05, 50, min-0.05, max+0.05);
-		plotter.Plot1D(Form("three_hitweighted_xdiff")       ,  ";x tracker - x measured [mm];"   , x_dut[dut] - xpos, 50, -0.3, 0.3);			
+		plotter.Plot2D(Form("xmeas_three_higestamp_xmeas_xtrack"),  ";x tracker [mm]; x measured [mm]", x_dut[dut], xpos , 100, min-0.05, max+0.05, 100, min-0.05, max+0.05);
+		plotter.Plot1D(Form("xmeas_three_higestamp_xdiff")       ,  ";x tracker - x measured [mm];"   , x_dut[dut] - xpos, 50, -0.3, 0.3);			
 		}
 
 	}
 
+}
+void Analysis::xpos_weight(std::string cfg, int ch1,int ch2,int ch3=-1)
+{
 
+	//std::cout << cf << " " << diff << " " << xpos << " " <<  x_dut[dut] << std::endl;
+	if (ch3 == -1){
+		
+		float min = fit_xmin(cfg,{ch1,ch2});
+		float max = fit_xmax(cfg,{ch1,ch2});
+
+
+		float xpos = (amp[ch1]*xcenter(cfg,ch1)+amp[ch2]*xcenter(cfg,ch2))/(amp[ch1]+amp[ch2]);
+
+		if ( x_dut[dut] > min && x_dut[dut] < max ){
+		plotter.Plot2D(Form("xmeas_two_hitweighted_xmeas_xtrack_%i_%i",ch1,ch2),  ";x tracker [mm]; x measured [mm]", x_dut[dut], xpos , 100, min-0.05, max+0.05, 100, min-0.05, max+0.05);
+		plotter.Plot1D(Form("xmeas_two_hitweighted_xdiff_%i_%i",ch1,ch2),         ";x tracker - x measured [mm];"   , x_dut[dut] - xpos, 50, -0.3, 0.3);			
+		}
+	}
+	else {
+
+		float min = 19.8; // for large plot
+    	float max = 21.8; // for large plot
+		//float min = 20.4;//fit_xmin({ch1,ch2,ch3});
+		//float max = 20.7;//fit_xmax({ch1,ch2,ch3});
+
+		float xpos = (amp[ch1]*xcenter(cfg,ch1)+amp[ch2]*xcenter(cfg,ch2)+amp[ch3]*xcenter(cfg,ch3))/(amp[ch1]+amp[ch2]+amp[ch3]);
+
+		if ( x_dut[dut] > min && x_dut[dut] < max ){
+		plotter.Plot2D(Form("xmeas_three_hitweighted_xmeas_xtrack"),  ";x tracker [mm]; x measured [mm]", x_dut[dut], xpos , 100, min-0.05, max+0.05, 100, min-0.05, max+0.05);
+		plotter.Plot1D(Form("xmeas_three_hitweighted_xdiff")       ,  ";x tracker - x measured [mm];"   , x_dut[dut] - xpos, 50, -0.3, 0.3);			
+		}
+
+	}
 
 }
