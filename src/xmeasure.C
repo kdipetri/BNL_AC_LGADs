@@ -192,14 +192,16 @@ void Analysis::xpos_single(std::string cfg, int ch1, int ch2, int ch3=-1)
 		float xpos = xcenter(cfg,max_ch); //(amp[ch1]*xcenter(ch1)+amp[ch2]*xcenter(ch2))/(amp[ch1]+amp[ch2]);
 
 		if ( x_dut[dut] > min && x_dut[dut] < max ){
-		plotter.Plot2D(Form("xmeas_two_highestamp_xmeas_xtrack_%i_%i",ch1,ch2),  ";x tracker [mm]; x measured [mm]", x_dut[dut], xpos, 100, min-0.05, max+0.05, 100, min-0.05, max+0.05);
+		plotter.Plot2D(Form("xmeas_two_highestamp_xmeas_xtrack_%i_%i",ch1,ch2),  ";x tracker [mm]; x measured [mm]", x_dut[dut], xpos, 100, min-0.05, max+0.05, 25, min-0.05, max+0.05);
 		plotter.Plot1D(Form("xmeas_two_highestamp_xdiff_%i_%i",ch1,ch2),  ";x tracker - x measured [mm];", x_dut[dut] - xpos, 50, -0.3, 0.3);			
 		}
 	}
 	else {
 
-		float min = 19.8; // for large plot
-    	float max = 21.8; // for large plot
+		//float min = 19.8; // for large plot
+    	//float max = 21.8; // for large plot
+    	float min = 20.4;
+		float max = 20.7;
 
     	int max_ch_tmp = amp[ch1] > amp[ch2] ? ch1 : ch2;
 		int max_ch  = amp[max_ch_tmp] > amp[ch3] ? max_ch_tmp : ch3;
@@ -207,7 +209,7 @@ void Analysis::xpos_single(std::string cfg, int ch1, int ch2, int ch3=-1)
 		float xpos = xcenter(cfg,max_ch); //(amp[ch1]*xcenter(ch1)+amp[ch2]*xcenter(ch2))/(amp[ch1]+amp[ch2]);
 
 		if ( x_dut[dut] > min && x_dut[dut] < max ){
-		plotter.Plot2D(Form("xmeas_three_higestamp_xmeas_xtrack"),  ";x tracker [mm]; x measured [mm]", x_dut[dut], xpos , 100, min-0.05, max+0.05, 100, min-0.05, max+0.05);
+		plotter.Plot2D(Form("xmeas_three_higestamp_xmeas_xtrack"),  ";x tracker [mm]; x measured [mm]", x_dut[dut], xpos , 100, min-0.05, max+0.05, 20, min-0.05, max+0.05);
 		plotter.Plot1D(Form("xmeas_three_higestamp_xdiff")       ,  ";x tracker - x measured [mm];"   , x_dut[dut] - xpos, 50, -0.3, 0.3);			
 		}
 
@@ -233,10 +235,10 @@ void Analysis::xpos_weight(std::string cfg, int ch1,int ch2,int ch3=-1)
 	}
 	else {
 
-		float min = 19.8; // for large plot
-    	float max = 21.8; // for large plot
-		//float min = 20.4;//fit_xmin({ch1,ch2,ch3});
-		//float max = 20.7;//fit_xmax({ch1,ch2,ch3});
+		//float min = 19.8; // for large plot
+    	//float max = 21.8; // for large plot
+		float min = 20.4;//fit_xmin({ch1,ch2,ch3});
+		float max = 20.7;//fit_xmax({ch1,ch2,ch3});
 
 		float xpos = (amp[ch1]*xcenter(cfg,ch1)+amp[ch2]*xcenter(cfg,ch2)+amp[ch3]*xcenter(cfg,ch3))/(amp[ch1]+amp[ch2]+amp[ch3]);
 

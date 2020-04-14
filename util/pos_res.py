@@ -25,22 +25,22 @@ five =ROOT.TColor(2005,0.388,0.098,0.608)
 six=ROOT.TColor(2006,0.906,0.878,0.094)
 colors = [1,2001,2002,2003,2004,2005,2006,6,2,3,4,6,7,5,1,8,9,29,38,46,1,2001,2002,2003,2004,2005,2006]
 
-f = ROOT.TFile.Open("hists.root")
+f = ROOT.TFile.Open("output/hists_cfg_4_13_12.root")
 
 def clean(hist,opt=""):
     hist.GetXaxis().SetTitleOffset(1.0)
     hist.GetXaxis().SetNdivisions(505)
     hist.GetYaxis().SetNdivisions(505)
 
-    hist.GetXaxis().SetTitleSize(0.05)
-    hist.GetYaxis().SetTitleSize(0.05)
-    hist.GetXaxis().SetLabelSize(0.04)
-    hist.GetYaxis().SetLabelSize(0.04)
+    hist.GetXaxis().SetTitleSize(0.06)
+    hist.GetYaxis().SetTitleSize(0.06)
+    hist.GetXaxis().SetLabelSize(0.06)
+    hist.GetYaxis().SetLabelSize(0.06)
 
     if "2D" in opt:
         hist.GetZaxis().SetNdivisions(505)
-        hist.GetZaxis().SetTitleSize(0.05)
-        hist.GetZaxis().SetLabelSize(0.04)
+        hist.GetZaxis().SetTitleSize(0.06)
+        hist.GetZaxis().SetLabelSize(0.05)
     if "hit_xdiff"   in hist.GetName(): hist.SetBinContent(hist.GetNbinsX(),0)
     return
 
@@ -49,7 +49,12 @@ def clean1D(histname):
     hist = f.Get(histname)
     clean(hist)
     hist.Draw()
-    c.Print("plots/clean_{}.png".format(histname))
+    if "xdiff" in histname: 
+        f1 = ROOT.TF1("f1"+histname,"gaus",-0.3,0.3)
+        hist.Fit(f1,"Q")
+        f1.Draw("same")
+        
+    c.Print("plots/pos_res/clean_{}.png".format(histname))
     return 
 
 def clean2D(histname):
@@ -61,28 +66,31 @@ def clean2D(histname):
     hist = f.Get(histname)
     clean(hist)
     hist.Draw("COLZ")
-    c.Print("plots/clean_{}.png".format(histname))
+    c.Print("plots/pos_res/clean_{}.png".format(histname))
     return
 
 names = []
-names.append("three_hit_xdiff_0_1")
-names.append("three_hitweighted_xdiff")	
-names.append("two_hit_xdiff_0_2")	
-names.append("two_hit_xdiff_0_1")	
-names.append("two_hit_xdiff_1_2")	
-names.append("two_hitweighted_xdiff_0_1")	
-names.append("two_hitweighted_xdiff_0_2")	
-names.append("two_hitweighted_xdiff_1_2")	
+#names.append("xmeas_three_hit_xdiff_0_1")
+names.append("xmeas_three_hitweighted_xdiff")	
+names.append("xmeas_three_higestamp_xdiff")	
+names.append("xmeas_three_lookup_xdiff_0_1")	
+names.append("xmeas_two_hitweighted_xdiff_0_2")	
+names.append("xmeas_two_hitweighted_xdiff_0_1")	
+names.append("xmeas_two_hitweighted_xdiff_1_2")	
+names.append("xmeas_two_hitweighted_xdiff_0_1")	
+names.append("xmeas_two_hitweighted_xdiff_0_2")	
+names.append("xmeas_two_hitweighted_xdiff_1_2")	
 for name in names: 
     clean1D(name)
 names = []
-names.append("three_hit_xmeas_xtrack_0_1")
-names.append("three_hitweighted_xmeas_xtrack")	
-names.append("two_hit_xmeas_xtrack_0_2")	
-names.append("two_hit_xmeas_xtrack_0_1")	
-names.append("two_hit_xmeas_xtrack_1_2")	
-names.append("two_hitweighted_xmeas_xtrack_0_1")	
-names.append("two_hitweighted_xmeas_xtrack_0_2")	
-names.append("two_hitweighted_xmeas_xtrack_1_2")
+names.append("xmeas_three_lookup_xmeas_xtrack_0_1")
+names.append("xmeas_three_hitweighted_xmeas_xtrack")	
+names.append("xmeas_three_higestamp_xmeas_xtrack")	
+#names.append("xmeas_two_hit_xmeas_xtrack_0_2")	
+#names.append("xmeas_two_hit_xmeas_xtrack_0_1")	
+#names.append("xmeas_two_hit_xmeas_xtrack_1_2")	
+names.append("xmeas_two_hitweighted_xmeas_xtrack_0_1")	
+names.append("xmeas_two_hitweighted_xmeas_xtrack_0_2")	
+names.append("xmeas_two_hitweighted_xmeas_xtrack_1_2")
 for name in names: 
     clean2D(name)
