@@ -16,7 +16,7 @@
 
 // Header file for the classes stored in the TTree if any.
 
-PlotHelper plotter("png");//set up the plotter
+PlotHelper plotter("");//set up the plotter
 TCanvas *c1 = new TCanvas("c1","c1",800,800);
 
 

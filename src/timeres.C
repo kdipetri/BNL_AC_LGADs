@@ -45,7 +45,7 @@ void Analysis::time_res(std::string cfg, int ch1,int ch2,int ch3=-1)
 	float max_X = 20.8;
 
 	if (LP2_20[ch1] == 0) return;
-	if (LP2_20[ch1] == 0) return;
+	if (LP2_20[ch2] == 0) return;
 	if (LP2_20[3] == 0) return;
 	//std::cout << cf << " " << diff << " " << xpos << " " <<  x_dut[dut] << std::endl;
 	if (ch3 == -1){
