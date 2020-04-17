@@ -70,7 +70,7 @@ class PlotHelper {
       gStyle->SetTitleFont(font,"z");
 
       Double_t lsize = 0.05; 
-      Double_t tsize = 0.05;
+      Double_t tsize = 0.06;
       gStyle->SetLabelSize(lsize,"x");
       gStyle->SetLabelSize(lsize,"y");
       gStyle->SetLabelSize(lsize,"z");

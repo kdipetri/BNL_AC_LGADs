@@ -145,8 +145,8 @@ void Analysis::xpos_lookup(std::string cfg, int ch1,int ch2,int ch3=-1)
 		int nxpos = 0;
 		float xpos_final=0;
 
-		float min = 20.4;
-		float max = 20.7;
+		float min = 20.3;
+		float max = 20.8;
 
 		for (int c1 =0; c1<3 ; c1++){
 			for (int c2 =0; c2<3 ; c2++){
@@ -184,8 +184,8 @@ void Analysis::xpos_single(std::string cfg, int ch1, int ch2, int ch3=-1)
 	//std::cout << cf << " " << diff << " " << xpos << " " <<  x_dut[dut] << std::endl;
 	if (ch3 == -1){
 		
-		float min = fit_xmin(cfg,{ch1,ch2});
-		float max = fit_xmax(cfg,{ch1,ch2});
+    	float min = 20.3;
+		float max = 20.8;
 
 		int max_ch = amp[ch1] > amp[ch2] ? ch1 : ch2;
 
@@ -200,8 +200,8 @@ void Analysis::xpos_single(std::string cfg, int ch1, int ch2, int ch3=-1)
 
 		//float min = 19.8; // for large plot
     	//float max = 21.8; // for large plot
-    	float min = 20.4;
-		float max = 20.7;
+    	float min = 20.3;
+		float max = 20.8;
 
     	int max_ch_tmp = amp[ch1] > amp[ch2] ? ch1 : ch2;
 		int max_ch  = amp[max_ch_tmp] > amp[ch3] ? max_ch_tmp : ch3;
@@ -222,8 +222,10 @@ void Analysis::xpos_weight(std::string cfg, int ch1,int ch2,int ch3=-1)
 	//std::cout << cf << " " << diff << " " << xpos << " " <<  x_dut[dut] << std::endl;
 	if (ch3 == -1){
 		
-		float min = fit_xmin(cfg,{ch1,ch2});
-		float max = fit_xmax(cfg,{ch1,ch2});
+		//float min = fit_xmin(cfg,{ch1,ch2});
+		//float max = fit_xmax(cfg,{ch1,ch2});
+		float min = 20.3;
+		float max = 20.8;
 
 
 		float xpos = (amp[ch1]*xcenter(cfg,ch1)+amp[ch2]*xcenter(cfg,ch2))/(amp[ch1]+amp[ch2]);
@@ -237,8 +239,8 @@ void Analysis::xpos_weight(std::string cfg, int ch1,int ch2,int ch3=-1)
 
 		//float min = 19.8; // for large plot
     	//float max = 21.8; // for large plot
-		float min = 20.4;//fit_xmin({ch1,ch2,ch3});
-		float max = 20.7;//fit_xmax({ch1,ch2,ch3});
+		float min = 20.3;//fit_xmin({ch1,ch2,ch3});
+		float max = 20.8;//fit_xmax({ch1,ch2,ch3});
 
 		float xpos = (amp[ch1]*xcenter(cfg,ch1)+amp[ch2]*xcenter(cfg,ch2)+amp[ch3]*xcenter(cfg,ch3))/(amp[ch1]+amp[ch2]+amp[ch3]);
 

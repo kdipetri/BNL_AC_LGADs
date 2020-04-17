@@ -56,6 +56,14 @@ void Analysis::time_res(std::string cfg, int ch1,int ch2,int ch3=-1)
 		float t01 = t0_corr(cfg,ch_1,amp[ch_1]);
 		float t02 = t0_corr(cfg,ch_2,amp[ch_2]);
 
+		// slew rate
+		plotter.Plot1D(Form("timeres_twohits_%i_%i_ch%i_slewrate" ,ch_1,ch_2,ch_1), ";slewrate [mV/ns]", abs(risetime[ch_1])/1e9, 50, 0, 2000);
+		plotter.Plot1D(Form("timeres_twohits_%i_%i_ch%i_slewrate" ,ch_1,ch_2,ch_2), ";slewrate [mV/ns]", abs(risetime[ch_2])/1e9, 50, 0, 2000);
+
+		// rms noise
+		plotter.Plot1D(Form("timeres_twohits_%i_%i_ch%i_rmsnoise" ,ch_1,ch_2,ch_1), ";baseline [mV]", baseline_RMS[ch_1], 50, 0, 50);
+		plotter.Plot1D(Form("timeres_twohits_%i_%i_ch%i_rmsnoise" ,ch_1,ch_2,ch_2), ";baseline [mV]", baseline_RMS[ch_2], 50, 0, 50);
+
 		plotter.Plot1D(Form("timeres_twohits_%i_%i_ch%i_deltaTun" ,ch_1,ch_2,ch_1), ";#Delta T uncorr [ns]", (LP2_20[ch_1] - LP2_20[3])*1e9, 100, t01+min_T, t01+max_T);
 		plotter.Plot1D(Form("timeres_twohits_%i_%i_ch%i_deltaTun" ,ch_1,ch_2,ch_2), ";#Delta T uncorr [ns]", (LP2_20[ch_2] - LP2_20[3])*1e9, 100, t02+min_T, t02+max_T);
 		plotter.Plot1D(Form("timeres_twohits_%i_%i_ch%i_deltaTcor",ch_1,ch_2,ch_1), ";#Delta T corr [ns]"  , (LP2_20[ch_1] - LP2_20[3])*1e9 - t01, 100, min_T, max_T);
@@ -96,6 +104,20 @@ void Analysis::time_res(std::string cfg, int ch1,int ch2,int ch3=-1)
 		float t01 = t0_corr(cfg,ch_1,amp[ch_1]); // in ns
 		float t02 = t0_corr(cfg,ch_2,amp[ch_2]); // in ns
 		float t03 = t0_corr(cfg,ch_3,amp[ch_3]); // in ns
+
+		// slew rate
+		plotter.Plot1D(Form("timeres_threehits_%i_%i_%i_ch%i_slewrate" ,ch_1,ch_2,ch_3,ch_1), ";slewrate [mV/ns]", abs(risetime[ch_1])/1e9, 50, 0, 2000);
+		plotter.Plot1D(Form("timeres_threehits_%i_%i_%i_ch%i_slewrate" ,ch_1,ch_2,ch_3,ch_2), ";slewrate [mV/ns]", abs(risetime[ch_2])/1e9, 50, 0, 2000);
+		plotter.Plot1D(Form("timeres_threehits_%i_%i_%i_ch%i_slewrate" ,ch_1,ch_2,ch_3,ch_3), ";slewrate [mV/ns]", abs(risetime[ch_3])/1e9, 50, 0, 2000);
+
+		// rms noise
+		plotter.Plot1D(Form("timeres_threehits_%i_%i_%i_ch%i_rmsnoise" ,ch_1,ch_2,ch_3,ch_1), ";baseline [mV]", baseline_RMS[ch_1], 50, 0, 50);
+		plotter.Plot1D(Form("timeres_threehits_%i_%i_%i_ch%i_rmsnoise" ,ch_1,ch_2,ch_3,ch_2), ";baseline [mV]", baseline_RMS[ch_2], 50, 0, 50);
+		plotter.Plot1D(Form("timeres_threehits_%i_%i_%i_ch%i_rmsnoise" ,ch_1,ch_2,ch_3,ch_3), ";baseline [mV]", baseline_RMS[ch_3], 50, 0, 50);
+
+		//plotter.Plot1D(Form("timeres_threehits_%i_%i_%i_ch%i_rmsnoise" ,ch_1,ch_2,ch_3,ch_1), ";#Delta T uncorr [ns]", (LP2_20[ch_1] - LP2_20[3])*1e9, 100, t01+min_T, t01+max_T);
+		//plotter.Plot1D(Form("timeres_threehits_%i_%i_%i_ch%i_rmsnoise" ,ch_1,ch_2,ch_3,ch_2), ";#Delta T uncorr [ns]", (LP2_20[ch_2] - LP2_20[3])*1e9, 100, t02+min_T, t02+max_T);
+		//plotter.Plot1D(Form("timeres_threehits_%i_%i_%i_ch%i_rmsnoise" ,ch_1,ch_2,ch_3,ch_3), ";#Delta T uncorr [ns]", (LP2_20[ch_3] - LP2_20[3])*1e9, 100, t03+min_T, t03+max_T);
 
 		// all hits amp ordered
 		plotter.Plot1D(Form("timeres_threehits_%i_%i_%i_ch%i_deltaTun" ,ch_1,ch_2,ch_3,ch_1), ";#Delta T uncorr [ns]", (LP2_20[ch_1] - LP2_20[3])*1e9, 100, t01+min_T, t01+max_T);

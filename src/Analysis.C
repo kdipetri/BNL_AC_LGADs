@@ -124,9 +124,9 @@ void Analysis::Loop(std::string cfg)
 		else if ( nhits == 2 )
 		{
 			//std::cout << "2 HITS" << std::endl;
-			if (amp[0] > thresh && amp[1] > thresh) { xpos_weight(cfg,0,1); time_res(cfg,0,1); charge_sharing(cfg,0,1);}
-			if (amp[0] > thresh && amp[2] > thresh) { xpos_weight(cfg,0,2); time_res(cfg,0,2); charge_sharing(cfg,0,2);}
-			if (amp[1] > thresh && amp[2] > thresh) { xpos_weight(cfg,1,2); time_res(cfg,1,2); charge_sharing(cfg,1,2);}
+			if (amp[0] > thresh && amp[1] > thresh) { xpos_single(cfg,0,1); xpos_weight(cfg,0,1); time_res(cfg,0,1); charge_sharing(cfg,0,1);}
+			if (amp[0] > thresh && amp[2] > thresh) { xpos_single(cfg,0,2); xpos_weight(cfg,0,2); time_res(cfg,0,2); charge_sharing(cfg,0,2);}
+			if (amp[1] > thresh && amp[2] > thresh) { xpos_single(cfg,1,2); xpos_weight(cfg,1,2); time_res(cfg,1,2); charge_sharing(cfg,1,2);}
 
 		}
 		else if (nhits == 3){
