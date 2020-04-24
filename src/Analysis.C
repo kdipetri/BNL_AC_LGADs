@@ -111,8 +111,6 @@ void Analysis::Loop(std::string cfg)
 		if (amp[3] > 250 ) continue;
 
 
-
-
 		int nhits = n_hits();
 		if ( nhits == 1 )
 		{
@@ -138,9 +136,9 @@ void Analysis::Loop(std::string cfg)
 			charge_sharing(cfg,0,1,2);
 		}
 		// try any combination of two hits
-		if (amp[0] > thresh) make_t0corr(cfg,0);
-		if (amp[1] > thresh) make_t0corr(cfg,1);
-		if (amp[2] > thresh) make_t0corr(cfg,2);
+		make_t0corr(cfg,0);
+		make_t0corr(cfg,1);
+		make_t0corr(cfg,2);
 		//if (amp[0] > thresh && amp[1] > thresh) xpos_lookup(cfg,0,1);
 		//if (amp[0] > thresh && amp[2] > thresh) xpos_lookup(cfg,0,2);
 		//if (amp[1] > thresh && amp[2] > thresh) xpos_lookup(cfg,1,2);

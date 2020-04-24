@@ -70,22 +70,62 @@ def make_correction(name):
     c.SetBottomMargin(0.2)
 
     hist = f.Get(name)
+    #hist.GetYaxis().SetRangeUser(2.0,4.5)
     cleanHist2D(hist)
         
     profile = hist.ProfileX("profx"+name)
     cleanHist(profile,0)
 
+
+
     hist.Draw("COLZ")
     profile.Draw("same")
+    #if "xpos" in name: 
+        #f1 = ROOT.TF1("f1_"+name,"pol2")
+        #hist.Fit(f1,"Q")
+        #f1.Draw("same")
+
     c.Print("profiles/{}_prof.png".format(name))
 
         
     fout.cd()
     profile.Write()
     hist.Write()
+    #if "xpos" in name: 
+        #f1.Write()
+        #print(f1.Eval(20.45),f1.Eval(20.55),f1.Eval(20.55))
 
 
 # main 
+make_correction("timeres_ch0_deltaTpeakun_v_amp")
+make_correction("timeres_ch1_deltaTpeakun_v_amp")
+make_correction("timeres_ch2_deltaTpeakun_v_amp")
+make_correction("timeres_ch0_deltaTpeakun_v_xpos")
+make_correction("timeres_ch1_deltaTpeakun_v_xpos")
+make_correction("timeres_ch2_deltaTpeakun_v_xpos")
+
 make_correction("timeres_ch0_deltaTun_v_amp")
 make_correction("timeres_ch1_deltaTun_v_amp")
 make_correction("timeres_ch2_deltaTun_v_amp")
+make_correction("timeres_ch0_deltaTun_v_xpos")
+make_correction("timeres_ch1_deltaTun_v_xpos")
+make_correction("timeres_ch2_deltaTun_v_xpos")
+
+make_correction("timeres_ch0_deltaTun_v_amp_x0")
+make_correction("timeres_ch0_deltaTun_v_amp_x1")
+make_correction("timeres_ch0_deltaTun_v_amp_x2")
+make_correction("timeres_ch0_deltaTun_v_amp_x3")
+make_correction("timeres_ch0_deltaTun_v_amp_x4")
+
+make_correction("timeres_ch1_deltaTun_v_amp_x0")
+make_correction("timeres_ch1_deltaTun_v_amp_x1")
+make_correction("timeres_ch1_deltaTun_v_amp_x2")
+make_correction("timeres_ch1_deltaTun_v_amp_x3")
+make_correction("timeres_ch1_deltaTun_v_amp_x4")
+
+make_correction("timeres_ch2_deltaTun_v_amp_x0")
+make_correction("timeres_ch2_deltaTun_v_amp_x1")
+make_correction("timeres_ch2_deltaTun_v_amp_x2")
+make_correction("timeres_ch2_deltaTun_v_amp_x3")
+make_correction("timeres_ch2_deltaTun_v_amp_x4")
+

@@ -27,6 +27,7 @@ colors = [1,2001,2002,2003,2004,2005,2006,6,2,3,4,6,7,5,1,8,9,29,38,46,1,2001,20
 
 f = ROOT.TFile.Open("profiles/amplitudes_safe.root")
 fout = ROOT.TFile.Open("profiles/profiles_safe.root","RECREATE")
+
 def cleanHist(hist,i):
     col = colors[i]
     name = hist.GetName()

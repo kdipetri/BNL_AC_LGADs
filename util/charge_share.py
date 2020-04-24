@@ -99,6 +99,7 @@ def get_distribution(name):
 
     if "sum_amp"  in name: 
         f1 = ROOT.TF1("f1_"+name,"landau",0,3000)
+        hist.Scale(1.0/hist.Integral(0,-1))
         hist.Fit(f1,"Q")
         f1.Draw("same")
 
@@ -155,6 +156,7 @@ def get_comparison(hists,fits,name):
 	else : 
 		leg.Draw()
 	hists[0].SetMaximum(ymax*1.3)
+	if "sum_amp" in name: hists[0].SetMaximum(0.29)
 	c.Print("plots/charge_sharing/compare_{}.png".format(name))
 
 # main 
@@ -252,6 +254,9 @@ hist3, fit3 = get_distribution("chargesharing_twohits_0_2_sum_amp")
 hists = [hist1,hist2,hist3]
 fits  = [fit1 ,fit2 ,fit3 ]
 get_comparison(hists,fits,"chargesharing_sum_amp")	
+hists = [hist1]
+fits  = [fit1 ]
+get_comparison(hists,fits,"chargesharing_three_sum_amp")	
 
 hist1 = get_distribution("chargesharing_threehits_0_1_2_xpos")	
 hist2 = get_distribution("chargesharing_twohits_0_1_xpos")
