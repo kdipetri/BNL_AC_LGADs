@@ -74,8 +74,40 @@ void Analysis::print_waveform(std::string cfg,std::string sel){
 
 
 }
+void clean2D(TH2F *hist){
+	hist->GetXaxis()->SetTitleSize(0.06);
+	hist->GetYaxis()->SetTitleSize(0.06);
+	hist->GetZaxis()->SetTitleSize(0.06);
+	hist->GetXaxis()->SetLabelSize(0.05);
+	hist->GetYaxis()->SetLabelSize(0.05);
+	hist->GetZaxis()->SetLabelSize(0.05);
+	hist->GetXaxis()->SetTitleOffset(1.0);
+	hist->GetYaxis()->SetTitleOffset(1.3);
+	hist->GetZaxis()->SetTitleOffset(1.0);
+	hist->GetXaxis()->SetNdivisions(505);
+	hist->GetYaxis()->SetNdivisions(505);
+}
+void clean1D(TH1F *hist){
+	hist->GetXaxis()->SetTitleSize(0.06);
+	hist->GetYaxis()->SetTitleSize(0.06);
+	hist->GetXaxis()->SetLabelSize(0.05);
+	hist->GetYaxis()->SetLabelSize(0.05);
+	hist->GetXaxis()->SetTitleOffset(1.0);
+	hist->GetYaxis()->SetTitleOffset(1.3);
+	hist->GetXaxis()->SetNdivisions(505);
+	hist->GetYaxis()->SetNdivisions(505);
+	hist->SetLineWidth(2);
+}
 void Analysis::Loop(std::string cfg)
 {
+
+	TH2F *h_dc_pos_high = new TH2F("h_dc_pos_high",";x [mm];y [mm];Events", 60, 19, 22, 40, 22, 25);
+	TH2F *h_dc_pos_low  = new TH2F("h_dc_pos_low" ,";x [mm];y [mm];Events", 60, 19, 22, 40, 22, 25);
+
+	TH1F *h_dc_amp_strip = new TH1F("h_dc_amp_strip",";Amplitude [mV];Events", 20,0,100);
+	TH1F *h_dc_amp_dc    = new TH1F("h_dc_amp_dc"   ,";Amplitude [mV];Events", 20,0,100);
+
+	TH1F *h_dc_charge    = new TH1F("h_dc_charge"   ,";Collected Charge [fC];Events", 25,0,50);
 
 	int n_saved_low = 0;
 	int n_saved_three = 0;
@@ -93,7 +125,7 @@ void Analysis::Loop(std::string cfg)
 		
 
 		// for debugging
-		if ( (n_saved_low > 20 && n_saved_three > 20 ) || ( n_saved_dc_high > 20 && n_saved_dc_other > 100 ) ) break;
+		//if ( (n_saved_low > 20 && n_saved_three > 20 ) || ( n_saved_dc_high > 20 && n_saved_dc_other > 100 ) ) break;
 		if (ientry%10000==0) std::cout << "Event" << ientry << std::endl;
 
 		// good track
@@ -134,16 +166,31 @@ void Analysis::Loop(std::string cfg)
 			if (x_dut[dut] > 22) continue;
 			if (y_dut[dut] > 25) continue;
 
-			if (amp[2] > 30 && n_saved_dc_high < 30){
+			if (amp[2] > 30 ) {
+				h_dc_pos_high->Fill(x_dut[dut],y_dut[dut]);
 
-				print_waveform(cfg,"dc_high");
-				n_saved_dc_high +=1;
+				if ( n_saved_dc_high < 30){
+					print_waveform(cfg,"dc_high");
+					n_saved_dc_high +=1;
+				}	
 
 			}
-			if ( (amp[0] > 30 || amp[1] > 30 ) && amp[2]> 11 && n_saved_dc_other < 100 ){
-				print_waveform(cfg,"dc_other");
-				n_saved_dc_other+=1;
+			if ( (amp[0] > 30 || amp[1] > 30 ) && amp[2]> 11 ){
+				h_dc_pos_low->Fill(x_dut[dut],y_dut[dut]);
+
+				if ( n_saved_dc_other < 100 ){
+					print_waveform(cfg,"dc_other");
+					n_saved_dc_other+=1;
+				}
 			}
+
+			if (x_dut[dut] > 19.8 && x_dut[dut] < 21.4){// center on strips 4,13
+				if (y_dut[dut] < 22.85 && y_dut[dut] > 22.68 && amp[2] > 11 ) h_dc_amp_strip->Fill(amp[2]);
+				if (y_dut[dut] < 22.68 && y_dut[dut] > 22.5  && amp[2] > 11 ) h_dc_amp_dc   ->Fill(amp[2]);
+
+			}
+
+			if (amp[2] > 30 ) h_dc_charge->Fill(-1000*integral[2]*1e9*50/4700);
 
 
 		}
@@ -152,7 +199,48 @@ void Analysis::Loop(std::string cfg)
 
 	  
 	}
-   
+	c1->cd();
+	c1->SetLeftMargin(0.15);
+	c1->SetBottomMargin(0.2);
+	c1->SetRightMargin(0.2);
+
+	clean2D(h_dc_pos_high);
+	h_dc_pos_high->Draw("COLZ");
+   	c1->Print(Form("plots/dc_pad/pos_dc_high.png"));
+	
+	clean2D(h_dc_pos_low);
+	h_dc_pos_low->Draw("COLZ");
+   	c1->Print(Form("plots/dc_pad/pos_dc_low.png"));
+
+
+	c1->SetLeftMargin(0.18);
+	c1->SetBottomMargin(0.18);
+	c1->SetRightMargin(0.05);
+	c1->SetTopMargin(0.05);
+	clean1D(h_dc_amp_strip);
+	clean1D(h_dc_amp_strip);
+   	h_dc_amp_strip->SetLineColor(kRed);
+	h_dc_amp_dc   ->SetLineColor(kBlue);  
+	h_dc_amp_strip->Draw("hist");
+	h_dc_amp_dc->Draw("hist same");
+   	c1->Print(Form("plots/dc_pad/amplitude_compare.png"));
+
+   	
+   	clean1D(h_dc_charge);
+   	
+   	h_dc_charge->SetLineColor(kBlack);
+   	h_dc_charge->Draw("hist");
+   	h_dc_charge->GetYaxis()->SetRangeUser(0,h_dc_charge->GetMaximum()*1.3);
+
+   	TF1 *f1 = new TF1("f1","landau",0,50);
+   	h_dc_charge->Fit(f1);
+   	f1->Draw("same");
+   	std::cout << "MPV :" << f1->GetParameter(1) << std::endl;
+   	c1->Print(Form("plots/dc_pad/dc_charge.png"));
+
+	c1->Clear();
+
+
 }
 int main(int argc, char* argv[]){
 

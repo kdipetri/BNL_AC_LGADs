@@ -82,7 +82,7 @@ class PlotHelper {
       gStyle->SetTitleXOffset(1.6); 
       gStyle->SetTitleYOffset(1.6);
 
-      gStyle->SetMarkerSize(1.5); //large markers
+      gStyle->SetMarkerSize(1.0); //large markers
       gStyle->SetHistLineWidth(2.0); // bold lines
       gStyle->SetLineStyleString(2,"[12 12]"); // postscript dashes
  
@@ -154,10 +154,8 @@ class PlotHelper {
       }
       //h->SetTitle(name.c_str());
       h->Fill(x, weight);
-      h->SetLineColor(histColour(0));
+      h->SetLineColor(kBlack);
       h->SetLineWidth(wide);
-      h->SetFillColor(kAzure-4);
-      h->SetFillStyle(histFill(0));
       h->SetStats(kTRUE);
       histos_1d.insert( std::pair<std::string, TH1F*> (name,h) );
     } else {// exists already, so just fill it

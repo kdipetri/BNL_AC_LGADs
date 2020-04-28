@@ -67,6 +67,7 @@ def make_profile(name):
 	hist = f.Get(name)
 
 	if "v_amp"      in name: hist.GetXaxis().SetRangeUser(0,1000)
+	if "v_xdiff"    in name: hist.GetXaxis().SetRangeUser(0,150)
 	if "v_xdiff"    in name: hist.GetXaxis().SetTitle("|x-x_{center}| [#mum]")
 	hist.RebinX()
 
@@ -83,6 +84,8 @@ def make_profile(name):
 	if "deltaTpeakun" in name: prof.GetYaxis().SetRangeUser(3.65,3.95)
 	if "risetime"     in name: prof.GetYaxis().SetRangeUser(0.45,0.65)
 	if "v_amp"        in name: prof.GetXaxis().SetRangeUser(0,1000)
+	if "v_xdiff"      in name: prof.GetXaxis().SetRangeUser(0,160)
+
 	clean_profile(prof)
 	
 	prof.Draw()
