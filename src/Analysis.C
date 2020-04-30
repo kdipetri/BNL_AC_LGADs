@@ -94,8 +94,8 @@ void Analysis::Loop(std::string cfg)
 
 		// good track
 		if (ntracks!=1) continue;
-		if (nplanes<15) continue;
-		if (npix <3) continue;
+		if (nplanes<16) continue;
+		if (npix <4) continue;
 		if (nback<2) continue;
 		
  		// in x,y position
@@ -103,8 +103,9 @@ void Analysis::Loop(std::string cfg)
 		if (y_dut[dut] < ymin) continue;
 		if (x_dut[dut] > xmax) continue;
 		if (y_dut[dut] > ymax) continue;
-		if (abs(yResidBack) > 500) continue;
-		if (abs(xResidBack) > 500) continue;
+		if (abs(yResidBack) > 300) continue;
+		if (xResidBack < 40 ) continue;
+		if (xResidBack > 260) continue;
 
 		// photek
 		if (amp[3] < 50  ) continue;

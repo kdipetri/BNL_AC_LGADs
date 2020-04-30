@@ -13,10 +13,23 @@ void Analysis::print_waveform(std::string cfg,std::string sel){
 	//	hist1->Fill(time[0][i], channel[0][i]);
 	//	hist2->Fill(time[0][i], channel[3][i]);
 	//}
-	TGraph *graph0 = new TGraph(1600,time[0],channel[0]);
-	TGraph *graph1 = new TGraph(1600,time[0],channel[1]);
-	TGraph *graph2 = new TGraph(1600,time[0],channel[2]);
-	TGraph *graph3 = new TGraph(1600,time[0],channel[3]);
+	Float_t   channel_photek[1][1600];
+	Float_t   time_sec[1][1600];
+	
+	float mult = (sel=="three_hit") ? 5 : 1;
+	for (int i=0; i<1600; i++){
+		channel_photek[0][i] = mult*channel[3][i] ;
+		time_sec[0][i] = time[0][i]*1e9;
+
+	}
+
+
+
+
+	TGraph *graph0 = new TGraph(1600,time_sec[0],channel[0]);
+	TGraph *graph1 = new TGraph(1600,time_sec[0],channel[1]);
+	TGraph *graph2 = new TGraph(1600,time_sec[0],channel[2]);
+	TGraph *graph3 = new TGraph(1600,time_sec[0],channel_photek[0]);
 	graph0->SetName(Form("%s_%s_%i_ch0",cfg.c_str(),sel.c_str(),i_evt));
 	graph1->SetName(Form("%s_%s_%i_ch1",cfg.c_str(),sel.c_str(),i_evt));
 	graph2->SetName(Form("%s_%s_%i_ch2",cfg.c_str(),sel.c_str(),i_evt));
@@ -29,7 +42,7 @@ void Analysis::print_waveform(std::string cfg,std::string sel){
 	c1->cd();
 	c1->SetLeftMargin(0.2);
 	c1->SetBottomMargin(0.21);
-	c1->SetRightMargin(0.11);
+	c1->SetRightMargin(0.12);
 	graph3->Draw("AL");
 	graph3->SetLineColor(kBlack);
 	graph3->SetLineWidth(2);
@@ -52,21 +65,25 @@ void Analysis::print_waveform(std::string cfg,std::string sel){
 
 	graph3->GetHistogram()->GetXaxis()->SetNdivisions(505);
 	graph3->GetHistogram()->GetYaxis()->SetNdivisions(505);
-	graph3->GetHistogram()->GetYaxis()->SetRangeUser( (sel == "three_hit") ? -1000 : -200,100);
-	graph3->GetHistogram()->GetXaxis()->SetTitle("time [s]");
+	graph3->GetHistogram()->GetYaxis()->SetRangeUser( (sel == "three_hit") ? -1300 : -200, (sel == "three_hit") ? 300 : 100);
+	graph3->GetHistogram()->GetXaxis()->SetRangeUser( -215, -195);
+	//graph3->GetHistogram()->GetXaxis()->SetRangeUser( -0.215e-6,-0.195e-6);
+	graph3->GetHistogram()->GetXaxis()->SetTitle("Time [ns]");
+	//graph3->GetHistogram()->GetXaxis()->SetTitle("Time [s]");
 	graph3->GetHistogram()->GetYaxis()->SetTitleOffset((sel == "three_hit") ? 1.2 : 1.4 );
-	graph3->GetHistogram()->GetYaxis()->SetTitle("signal [mV]");
+	graph3->GetHistogram()->GetYaxis()->SetTitle("Voltage [mV]");
 	gPad->SetTicks();
 
-	float min = (sel != "low_amp") ? 0.3 : 0.35; 
-	float max = (sel != "low_amp") ? 0.5 : 0.45;
+	float min = (sel != "low_amp") ? 0.28 : 0.33; 
+	float max = (sel != "low_amp") ? 0.48 : 0.43;
 
-	TLegend *leg = new TLegend(0.22,min,0.5,max);
+	TLegend *leg = new TLegend(0.24,min,0.5,max);
 	leg->SetBorderSize(0);
+	leg->SetTextSize(0.04);
 	leg->AddEntry(graph0,"Channel 4");
 	if (sel != "low_amp") leg->AddEntry(graph1,"Channel 13");
 	if (sel != "low_amp") leg->AddEntry(graph2,(sel=="dc_high" || sel=="dc_other") ? "DC Pad" : "Channel 12");
-	leg->AddEntry(graph3,"Photek");
+	leg->AddEntry(graph3,(sel == "three_hit") ? "Photek (x5)" : "Photek");
 	leg->Draw();
 
 	c1->Print(Form("plots/waveforms/%s_event_%i.png",sel.c_str(),i_evt));
@@ -199,46 +216,50 @@ void Analysis::Loop(std::string cfg)
 
 	  
 	}
-	c1->cd();
-	c1->SetLeftMargin(0.15);
-	c1->SetBottomMargin(0.2);
-	c1->SetRightMargin(0.2);
-
-	clean2D(h_dc_pos_high);
-	h_dc_pos_high->Draw("COLZ");
-   	c1->Print(Form("plots/dc_pad/pos_dc_high.png"));
+	if (cfg == "cfg_4_13_DC")
+	{
+		c1->cd();
+		c1->SetLeftMargin(0.15);
+		c1->SetBottomMargin(0.2);
+		c1->SetRightMargin(0.2);
 	
-	clean2D(h_dc_pos_low);
-	h_dc_pos_low->Draw("COLZ");
-   	c1->Print(Form("plots/dc_pad/pos_dc_low.png"));
+		clean2D(h_dc_pos_high);
+		h_dc_pos_high->Draw("COLZ");
+   		c1->Print(Form("plots/dc_pad/pos_dc_high.png"));
+		
+		clean2D(h_dc_pos_low);
+		h_dc_pos_low->Draw("COLZ");
+   		c1->Print(Form("plots/dc_pad/pos_dc_low.png"));
+	
+	
+		c1->SetLeftMargin(0.18);
+		c1->SetBottomMargin(0.18);
+		c1->SetRightMargin(0.05);
+		c1->SetTopMargin(0.05);
+		clean1D(h_dc_amp_strip);
+		clean1D(h_dc_amp_strip);
+   		h_dc_amp_strip->SetLineColor(kRed);
+		h_dc_amp_dc   ->SetLineColor(kBlue);  
+		h_dc_amp_strip->Draw("hist");
+		h_dc_amp_dc->Draw("hist same");
+   		c1->Print(Form("plots/dc_pad/amplitude_compare.png"));
+	
+   		
+   		clean1D(h_dc_charge);
+   		
+   		h_dc_charge->SetLineColor(kBlack);
+   		h_dc_charge->Draw("hist");
+   		h_dc_charge->GetYaxis()->SetRangeUser(0,h_dc_charge->GetMaximum()*1.3);
+	
+   		TF1 *f1 = new TF1("f1","landau",0,50);
+   		h_dc_charge->Fit(f1);
+   		f1->Draw("same");
+   		std::cout << "MPV :" << f1->GetParameter(1) << std::endl;
+   		c1->Print(Form("plots/dc_pad/dc_charge.png"));
+	
+		c1->Clear();		
+	}
 
-
-	c1->SetLeftMargin(0.18);
-	c1->SetBottomMargin(0.18);
-	c1->SetRightMargin(0.05);
-	c1->SetTopMargin(0.05);
-	clean1D(h_dc_amp_strip);
-	clean1D(h_dc_amp_strip);
-   	h_dc_amp_strip->SetLineColor(kRed);
-	h_dc_amp_dc   ->SetLineColor(kBlue);  
-	h_dc_amp_strip->Draw("hist");
-	h_dc_amp_dc->Draw("hist same");
-   	c1->Print(Form("plots/dc_pad/amplitude_compare.png"));
-
-   	
-   	clean1D(h_dc_charge);
-   	
-   	h_dc_charge->SetLineColor(kBlack);
-   	h_dc_charge->Draw("hist");
-   	h_dc_charge->GetYaxis()->SetRangeUser(0,h_dc_charge->GetMaximum()*1.3);
-
-   	TF1 *f1 = new TF1("f1","landau",0,50);
-   	h_dc_charge->Fit(f1);
-   	f1->Draw("same");
-   	std::cout << "MPV :" << f1->GetParameter(1) << std::endl;
-   	c1->Print(Form("plots/dc_pad/dc_charge.png"));
-
-	c1->Clear();
 
 
 }

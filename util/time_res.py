@@ -12,6 +12,8 @@ ROOT.gStyle.SetTitleSize(0.06,"xyz")
 ROOT.gStyle.SetTitleSize(0.06,"t")
 ROOT.gStyle.SetPadBottomMargin(0.14)
 ROOT.gStyle.SetPadLeftMargin(0.14)
+ROOT.gStyle.SetPadTickX(1)
+ROOT.gStyle.SetPadTickY(1)
 ROOT.gStyle.SetTitleOffset(1,'y')
 ROOT.gStyle.SetLegendTextSize(0.035)
 ROOT.gStyle.SetGridStyle(3)
@@ -65,30 +67,46 @@ def label(obj):
     if "ch1" in name: return "Channel 13"
     if "ch2" in name: return "Channel 12"
     if "comb" in name: return "Weighted Avg"
-    if "lead" in name: return "Leading Channel"
+    if "lead" in name: 
+        ch = name.split("_")[2]
+        if "0" in ch: return "Channel 4"
+        if "1" in ch: return "Channel 13"
+        if "2" in ch: return "Channel 12"        
     return ""
 
 def get_time_res(name):
     ROOT.gStyle.SetOptStat(0)
     ROOT.gStyle.SetOptFit(0)
     hist = f.Get(name)
+    #if "deltaT" in name: hist.Rebin()
     c = ROOT.TCanvas()
-    leg = ROOT.TLegend(0.37,0.88-0.05,0.88,0.88)
-
+    
+    if "deltaT" in name: 
+        leg = ROOT.TLegend(0.6,0.86-0.12,0.86,0.86)
+    else : 
+        leg = ROOT.TLegend(0.6,0.86-0.06,0.86,0.86)
+    leg.SetBorderSize(0)
+    leg.SetTextSize(0.045)
     cleanHist(hist,0)
     hist.Draw("hist") 
-    lab = label(hist)
+    hist.GetYaxis().SetRangeUser(0,(hist.GetMaximum()*1.2))
+    hist.GetYaxis().SetTitle("Events")
+    lab1 = label(hist)
+
 
     if "deltaT"  in name: 
-        f1 = ROOT.TF1("f1_"+name,"gaus",-0.5,0.5)
+        if "deltaTun" in name : f1 = ROOT.TF1("f1_"+name,"gaus",2.85,3.85)
+        else                  : f1 = ROOT.TF1("f1_"+name,"gaus",-0.5,0.5)              
         hist.Fit(f1,"Q")
         f1.Draw("same")
-        t0_str = ": t0={:.1f} ps, #sigma={:.1f} ps".format(f1.GetParameter(1)*1e3, f1.GetParameter(2)*1e3)
-        lab += t0_str
-
+        t0_str = "#sigma={:.1f} ps".format(f1.GetParameter(2)*1e3)
+        hist.GetXaxis().SetTitle("t_{0}-t_{ref} [ns]")
+        #t0_str = "#mu={:.1f} ps, #sigma={:.1f} ps".format(f1.GetParameter(1)*1e3, f1.GetParameter(2)*1e3)
+        #lab += t0_str
 
     if "xpos" not in name:
-        leg.AddEntry(hist,lab,"l")
+        leg.AddEntry(hist,lab1,"l")
+        if "deltaT" in name: leg.AddEntry(f1,t0_str,"l")
         leg.Draw()
     else:
         hist.Rebin()
@@ -106,11 +124,18 @@ def get_time_res(name):
 def get_comparison(hists,fits,name):
     ROOT.gStyle.SetOptStat(0)
     ROOT.gStyle.SetOptFit(0)
-    c = ROOT.TCanvas()
-    dy = len(hists)*0.05
-    if "deltaT" in name: leg = ROOT.TLegend(0.37,0.88-dy,0.88,0.88)
-    elif "slewrate" in name or "rmsnoise" in name: leg = ROOT.TLegend(0.35,0.88-dy,0.88,0.88)
-    else : leg = ROOT.TLegend(0.55,0.88-dy,0.88,0.88)
+    c = ROOT.TCanvas(name,"",900,800)
+    c.SetLeftMargin(0.2)
+
+    dy = len(hists)*0.06
+    if "deltaT" in name     : leg = ROOT.TLegend(0.40,0.86-dy,0.86,0.86)
+    elif "slewrate" in name : leg = ROOT.TLegend(0.35,0.86-dy,0.86,0.86)
+    elif "rmsnoise" in name : leg = ROOT.TLegend(0.35,0.86-dy,0.86,0.86)
+    else                    : leg = ROOT.TLegend(0.55,0.86-dy,0.86,0.86)
+    leg.SetBorderSize(0)
+    leg.SetTextSize(0.045)
+
+
     ymax = 0
     for i,hist in enumerate(hists): 
         
@@ -124,7 +149,8 @@ def get_comparison(hists,fits,name):
         if len(fits) > 0: 
             fits[i].SetLineColor(colors[icol])
             fits[i].Draw("same")
-            t0_str = ": t0={:.1f} ps, #sigma={:.1f} ps".format(fits[i].GetParameter(1)*1e3, fits[i].GetParameter(2)*1e3)
+            t0_str = ": #sigma={:.1f} ps".format(fits[i].GetParameter(2)*1e3)
+            #t0_str = ": t0={:.1f} ps, #sigma={:.1f} ps".format(fits[i].GetParameter(1)*1e3, fits[i].GetParameter(2)*1e3)
             lab+= t0_str
         if "slewrate" in name :
             mean = hist.GetMean()
@@ -139,6 +165,7 @@ def get_comparison(hists,fits,name):
     leg.Draw()
     hists[0].SetMaximum(ymax*1.3)
     c.Print("plots/time_res/compare_{}.png".format(name))
+    c.Print("plots/time_res/compare_{}.pdf".format(name))
 
 
 
@@ -159,6 +186,8 @@ for ch1 in range(0,3):
         #"timeres_twohits_2_0_ch0_amp"
         #"timeres_twohits_2_0_ch2_amp"
         #"timeres_twohits_2_0_ch2_xpos"
+        if ch1==1 and ch2==2: continue
+        if ch1==2 and ch2==1: continue
 
         hist1, fit1 = get_time_res("timeres_twohits_%i_%i_ch%i_deltaTun"%(ch1,ch2,ch1))
         hist2, fit2 = get_time_res("timeres_twohits_%i_%i_ch%i_deltaTun"%(ch1,ch2,ch2))
@@ -202,6 +231,12 @@ for ch1 in range(0,3):
         two_fits    = []
         get_comparison(two_hists,two_fits,"timeres_twohits_%i_%i_rmsnoise"%(ch1,ch2))
 
+        hist1 = get_time_res("timeres_twohits_%i_%i_ch%i_jitter"%(ch1,ch2,ch1))
+        hist2 = get_time_res("timeres_twohits_%i_%i_ch%i_jitter"%(ch1,ch2,ch2))
+        two_hists   = [hist1,hist2]
+        two_fits    = []
+        get_comparison(two_hists,two_fits,"timeres_twohits_%i_%i_jitter"%(ch1,ch2))
+
         
         get_time_res("timeres_twohits_%i_%i_ch%i_deltaTun"%(ch1,ch2,ch1))
         get_time_res("timeres_twohits_%i_%i_ch%i_deltaTun"%(ch1,ch2,ch2))
@@ -237,6 +272,13 @@ for ch1 in range(0,3):
             #three_hists = [hist1,hist2,hist3]
             #three_fits  = [fit1 ,fit2 ,fit3 ]
             #get_comparison(three_hists,three_fits,"timeres_threehits_%i_%i_%i_deltaTcorr2"%(ch1,ch2,ch3))
+
+            hist1 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_jitter"%(ch1,ch2,ch3,ch1))
+            hist2 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_jitter"%(ch1,ch2,ch3,ch2))
+            hist3 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_jitter"%(ch1,ch2,ch3,ch3))
+            three_hists = [hist1,hist2,hist3]
+            three_fits  = []
+            get_comparison(three_hists,three_fits,"timeres_threehits_%i_%i_%i_jitter"%(ch1,ch2,ch3))
 
             hist1 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_rmsnoise"%(ch1,ch2,ch3,ch1))
             hist2 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_rmsnoise"%(ch1,ch2,ch3,ch2))

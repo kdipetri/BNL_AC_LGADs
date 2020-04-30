@@ -4,6 +4,39 @@
 #include <TStyle.h>
 #include <TCanvas.h>
 
+
+void Analysis::nominicircuit(std::string cfg,std::string sel){
+
+	if (LP2_20[3]==0) return;
+
+	for (int i=0; i<1600; i++){
+
+		plotter.Plot2D(Form("h_nomini_%s_ch0",sel.c_str()), ";time [ns];channel [mV]", (time[0][i]-LP2_20[3])*1e9, channel[0][i], 1600, -226.986+210e-9, -187.011+210, 250, -500, 100);
+		plotter.Plot2D(Form("h_nomini_%s_ch1",sel.c_str()), ";time [ns];channel [mV]", (time[0][i]-LP2_20[3])*1e9, channel[1][i], 1600, -226.986+210e-9, -187.011+210, 250, -500, 100);
+		plotter.Plot2D(Form("h_nomini_%s_ch2",sel.c_str()), ";time [ns];channel [mV]", (time[0][i]-LP2_20[3])*1e9, channel[2][i], 1600, -226.986+210e-9, -187.011+210, 250, -500, 100);
+		plotter.Plot2D(Form("h_nomini_%s_ch3",sel.c_str()), ";time [ns];channel [mV]", (time[0][i]-LP2_20[3])*1e9, channel[3][i], 1600, -226.986+210e-9, -187.011+210, 250, -500, 100);
+	}
+
+
+	return;
+}
+
+void Analysis::cluster_waveform(std::string cfg, int ch){
+
+	if (LP2_20[3]==0) return;
+	if (LP2_20[ch]==0) return;
+
+	std::string sel = Form("h_threehits_sig_ch%i",ch);
+
+	for (int i=0; i<1600; i++){
+
+		plotter.Plot2D(sel, ";time [ns];channel [mV]", (time[0][i]-LP2_20[3])*1e9, channel[ch][i], 1600, -226.986+210e-9, -187.011+210, 250, -2000, 100);
+	}
+
+
+	return;
+}
+
 void Analysis::avg_waveform(std::string cfg, int ch){
 
 	if (LP2_20[3]==0) return;
@@ -43,7 +76,7 @@ void Analysis::avg_waveform(std::string cfg, int ch){
 
 	for (int i=0; i<1600; i++){
 
-		plotter.Plot2D(sel, ";time [s];channel [mV]", time[0][i]-LP2_20[3], channel[ch][i], 1600, -2.26986e-07+210e-9, -1.87011e-07+210e-9, 250, -2000, 100);
+		plotter.Plot2D(sel, ";time [ns];channel [mV]", (time[0][i]-LP2_20[3])*1e9, channel[ch][i], 1600, -226.986+210, -187.011+210, 250, -2000, 100);
 	}
 	plotter.Plot1D(Form("%s_amp"  ,sel.c_str()), "", amp[ch] 				    , 50, 0, 2000);
 	plotter.Plot1D(Form("%s_tpeak",sel.c_str()), "", (t_peak[ch]-LP2_20[3])*1e9, 50, 3.2, 4.5);
@@ -71,54 +104,79 @@ void Analysis::Loop(std::string cfg)
 
 		// good track
 		if (ntracks!=1) continue;
-		if (nplanes<15) continue;
-		if (npix <3) continue;
+		if (nplanes<16) continue;
+		if (npix <4) continue;
 		if (nback<2) continue;
 		
-		if (abs(yResidBack) > 500) continue;
-		if (abs(xResidBack) > 500) continue;
+		if (abs(yResidBack) > 300) continue;
+		if (xResidBack < 40 ) continue;
+		if (xResidBack > 260) continue;
 
 		// photek
 		if (amp[3] < 50  ) continue;
 		if (amp[3] > 250 ) continue;
 
+		if (cfg == "cfg_4_13_DC"){
+			if (amp[2] > 30)      nominicircuit(cfg,"dchit");
+			if (amp[2] > 11 && amp[0]>30) nominicircuit(cfg,"ch4hit");
+
+		}
+ 		// in x,y position
+		if (x_dut[dut] < xmin) continue;
+		if (y_dut[dut] < ymin) continue;
+		if (x_dut[dut] > xmax) continue;
+		if (y_dut[dut] > ymax) continue;
 		if (y_dut[dut] > 24.2) continue;
 		if (y_dut[dut] < 22.8) continue;
-
 		if (x_dut[dut] > 21.0) continue;
 		if (x_dut[dut] < 20.0) continue;
 
-		float dist;
-		float tdiff;
-		float tdiff2;
 
-		dist = fabs(x_dut[dut] - 20.65)*1e3;
-		tdiff = (t_peak[1]- LP2_20[3])*1e9;
-		tdiff2 = (LP2_20[1]- LP2_20[3])*1e9;
-		if (amp[1]> 110) plotter.Plot2D("h_ch1_amp_v_x"  ,";|x-x_{strip}| [#mum]; amplitude [mV]"            , dist, amp[1]                 , 30, 0, 300, 100, 0, 2000);
-		if (amp[1]> 110) plotter.Plot2D("h_ch1_tpeak_v_x",";|x-x_{strip}| [#mum]; t_{peak} - t_{photek} [ns]", dist, tdiff , 30, 0, 300, 100, 3.2, 4.5);
-		if (amp[1]> 110) plotter.Plot2D("h_ch1_tdiff_v_x",";|x-x_{strip}| [#mum]; t_{peak} - t_{photek} [ns]", dist, tdiff2, 30, 0, 300, 100, 2.5, 4.0);
+		if (cfg == "cfg_4_13_12"){
+			float dist;
+			float tdiff;
+			float tdiff2;
+	
+			dist = fabs(x_dut[dut] - 20.65)*1e3;
+			tdiff = (t_peak[1]- LP2_20[3])*1e9;
+			tdiff2 = (LP2_20[1]- LP2_20[3])*1e9;
+			if (amp[1]> 110) plotter.Plot2D("h_ch1_amp_v_x"  ,";|x-x_{strip}| [#mum]; amplitude [mV]"            , dist, amp[1]                 , 30, 0, 300, 100, 0, 2000);
+			if (amp[1]> 110) plotter.Plot2D("h_ch1_tpeak_v_x",";|x-x_{strip}| [#mum]; t_{peak} - t_{photek} [ns]", dist, tdiff , 30, 0, 300, 100, 3.2, 4.5);
+			if (amp[1]> 110) plotter.Plot2D("h_ch1_tdiff_v_x",";|x-x_{strip}| [#mum]; t_{peak} - t_{photek} [ns]", dist, tdiff2, 30, 0, 300, 100, 2.5, 4.0);
+	
+			dist = fabs(x_dut[dut] - 20.55)*1e3;
+			tdiff = (t_peak[0]- LP2_20[3])*1e9;
+			tdiff2 = (LP2_20[0]- LP2_20[3])*1e9;
+			if (amp[0]> 110) plotter.Plot2D("h_ch0_amp_v_x"  ,";|x-x_{strip}| [#mum]; amplitude [mV]"            , dist, amp[0]                  , 30, 0, 300, 100, 0, 2000);
+			if (amp[2]> 110) plotter.Plot2D("h_ch0_tpeak_v_x",";|x-x_{strip}| [#mum]; t_{peak} - t_{photek} [ns]", dist, tdiff  , 30, 0, 300, 100, 3.2, 4.5);
+			if (amp[2]> 110) plotter.Plot2D("h_ch0_tdiff_v_x",";|x-x_{strip}| [#mum]; t_{peak} - t_{photek} [ns]", dist, tdiff2 , 30, 0, 300, 100, 2.5, 4.0);
+	
+			dist = fabs(x_dut[dut] - 20.45)*1e3;
+			tdiff = (t_peak[2]- LP2_20[3])*1e9;
+			tdiff2 = (LP2_20[2]- LP2_20[3])*1e9;
+			if (amp[2]> 110) plotter.Plot2D("h_ch2_amp_v_x"  ,";|x-x_{strip}| [#mum]; amplitude [mV]"            , dist, amp[2]                 , 30, 0, 300, 100, 0, 2000);
+			if (amp[2]> 110) plotter.Plot2D("h_ch2_tpeak_v_x",";|x-x_{strip}| [#mum]; t_{peak} - t_{photek} [ns]", dist, tdiff , 30, 0, 300, 100, 3.2, 4.5);
+			if (amp[2]> 110) plotter.Plot2D("h_ch2_tdiff_v_x",";|x-x_{strip}| [#mum]; t_{peak} - t_{photek} [ns]", dist, tdiff2, 30, 0, 300, 100, 2.5, 4.0);
+	
+	
+			if (x_dut[dut] > 20.8) continue;
+			if (x_dut[dut] < 20.3) continue;
+	
+			avg_waveform(cfg,1);
+	
+			if (amp[0] > 110 && amp[1]> 110 && amp[3] > 110)// 3 hits
+			{
+				if (amp[0] > amp[1] && amp[0] > amp[2]) {// channel four is best
+					cluster_waveform(cfg,0);
+					cluster_waveform(cfg,1);
+					cluster_waveform(cfg,2);
+					cluster_waveform(cfg,3);				
+				}
+			}
+	
+			//avg_waveform(cfg,2);			
+		}
 
-		dist = fabs(x_dut[dut] - 20.55)*1e3;
-		tdiff = (t_peak[0]- LP2_20[3])*1e9;
-		tdiff2 = (LP2_20[0]- LP2_20[3])*1e9;
-		if (amp[0]> 110) plotter.Plot2D("h_ch0_amp_v_x"  ,";|x-x_{strip}| [#mum]; amplitude [mV]"            , dist, amp[0]                  , 30, 0, 300, 100, 0, 2000);
-		if (amp[2]> 110) plotter.Plot2D("h_ch0_tpeak_v_x",";|x-x_{strip}| [#mum]; t_{peak} - t_{photek} [ns]", dist, tdiff  , 30, 0, 300, 100, 3.2, 4.5);
-		if (amp[2]> 110) plotter.Plot2D("h_ch0_tdiff_v_x",";|x-x_{strip}| [#mum]; t_{peak} - t_{photek} [ns]", dist, tdiff2 , 30, 0, 300, 100, 2.5, 4.0);
-
-		dist = fabs(x_dut[dut] - 20.45)*1e3;
-		tdiff = (t_peak[2]- LP2_20[3])*1e9;
-		tdiff2 = (LP2_20[2]- LP2_20[3])*1e9;
-		if (amp[2]> 110) plotter.Plot2D("h_ch2_amp_v_x"  ,";|x-x_{strip}| [#mum]; amplitude [mV]"            , dist, amp[2]                 , 30, 0, 300, 100, 0, 2000);
-		if (amp[2]> 110) plotter.Plot2D("h_ch2_tpeak_v_x",";|x-x_{strip}| [#mum]; t_{peak} - t_{photek} [ns]", dist, tdiff , 30, 0, 300, 100, 3.2, 4.5);
-		if (amp[2]> 110) plotter.Plot2D("h_ch2_tdiff_v_x",";|x-x_{strip}| [#mum]; t_{peak} - t_{photek} [ns]", dist, tdiff2, 30, 0, 300, 100, 2.5, 4.0);
-
-
-		if (x_dut[dut] > 20.8) continue;
-		if (x_dut[dut] < 20.3) continue;
-
-		avg_waveform(cfg,1);
-		//avg_waveform(cfg,2);
 
 	}
    
@@ -126,8 +184,8 @@ void Analysis::Loop(std::string cfg)
 int main(int argc, char* argv[]){
 
 	// defaults 
-	std::string cfg = "cfg_4_13_12";
-	//std::string cfg = "cfg_4_13_DC";
+	//std::string cfg = "cfg_4_13_12";
+	std::string cfg = "cfg_4_13_DC";
 
 	TFile *file = TFile::Open(Form("skims/%s.root",cfg.c_str()));
 	TTree *tree = (TTree*)file->Get("pulse");

@@ -130,6 +130,8 @@ public :
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
    virtual void     avg_waveform(std::string cfg, int ch);
+   virtual void     cluster_waveform(std::string cfg, int ch);
+   virtual void     nominicircuit(std::string cfg,std::string sel);
 };
 
 #endif

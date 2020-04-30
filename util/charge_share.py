@@ -4,14 +4,14 @@ ROOT.gStyle.SetOptFit(1)
 ROOT.gROOT.SetBatch(ROOT.kTRUE)
 ROOT.gStyle.SetLabelFont(42,"xyz")
 ROOT.gStyle.SetLabelSize(0.05,"xyz")
-#ROOT.gStyle.SetTitleFont(42)
 ROOT.gStyle.SetTitleFont(42,"xyz")
 ROOT.gStyle.SetTitleFont(42,"t")
-#ROOT.gStyle.SetTitleSize(0.05)
 ROOT.gStyle.SetTitleSize(0.06,"xyz")
 ROOT.gStyle.SetTitleSize(0.06,"t")
 ROOT.gStyle.SetPadBottomMargin(0.14)
 ROOT.gStyle.SetPadLeftMargin(0.14)
+ROOT.gStyle.SetPadTickX(1)
+ROOT.gStyle.SetPadTickY(1)
 ROOT.gStyle.SetTitleOffset(1,'y')
 ROOT.gStyle.SetLegendTextSize(0.035)
 ROOT.gStyle.SetGridStyle(3)
@@ -120,11 +120,11 @@ def get_comparison(hists,fits,name):
 	ROOT.gStyle.SetOptStat(0)
 	ROOT.gStyle.SetOptFit(0)
 	c = ROOT.TCanvas()
-	dy = len(hists)*0.05
+	dy = len(hists)*0.06
 	leg = ROOT.TLegend(0.55,0.88-dy,0.88,0.88)
 	if "xpos" in name:
-		leg1 = ROOT.TLegend(0.2 ,0.88-0.05*2,0.42,0.88)
-		leg2 = ROOT.TLegend(0.42,0.88-0.05*2,0.64,0.88)
+		leg1 = ROOT.TLegend(0.2 ,0.88-0.06*2,0.42,0.88)
+		leg2 = ROOT.TLegend(0.42,0.88-0.06*2,0.64,0.88)
 		leg3 = ROOT.TLegend(0.64,0.88-0.05  ,0.86,0.88)
 		leg1.SetBorderSize(0)
 		leg2.SetBorderSize(0)
@@ -156,8 +156,10 @@ def get_comparison(hists,fits,name):
 	else : 
 		leg.Draw()
 	hists[0].SetMaximum(ymax*1.3)
+	if "xpos" in name : hists[0].GetYaxis().SetTitle("Events")
 	if "sum_amp" in name: hists[0].SetMaximum(0.29)
 	c.Print("plots/charge_sharing/compare_{}.png".format(name))
+	c.Print("plots/charge_sharing/compare_{}.pdf".format(name))
 
 # main 
 def do_stack(hists,name):
@@ -166,9 +168,9 @@ def do_stack(hists,name):
 	c = ROOT.TCanvas()
 	c.SetBottomMargin(0.15)
 	c.SetLeftMargin(0.15)
-	dy = len(hists)*0.05
-	leg1 = ROOT.TLegend(0.2 ,0.88-0.05*2,0.42,0.88)
-	leg2 = ROOT.TLegend(0.42,0.88-0.05*2,0.64,0.88)
+	dy = len(hists)*0.06
+	leg1 = ROOT.TLegend(0.2 ,0.88-0.06*2,0.42,0.88)
+	leg2 = ROOT.TLegend(0.42,0.88-0.06*2,0.64,0.88)
 	leg3 = ROOT.TLegend(0.64,0.88-0.05  ,0.86,0.88)
 	leg1.SetBorderSize(0)
 	leg2.SetBorderSize(0)
@@ -189,19 +191,23 @@ def do_stack(hists,name):
 		else : leg3.AddEntry(hist,lab, "f") 
 
 	stack.Draw("hist")
-	stack.SetMaximum(1000)
+	stack.SetMaximum(700)
 	stack.GetXaxis().SetNdivisions(505)
+	stack.GetYaxis().SetNdivisions(505)
+	stack.GetYaxis().SetTitle("Events")
 	leg1.Draw()
 	leg2.Draw()
 	leg3.Draw()
 	#hists[0].SetMaximum(ymax*1.3)
 	c.Print("plots/charge_sharing/stack_{}.png".format(name))
+	c.Print("plots/charge_sharing/stack_{}.pdf".format(name))
         
 def clean2D(histname):
 	c = ROOT.TCanvas(histname,"",900,800)
 	c.SetTopMargin(0.1)
 	c.SetLeftMargin(0.2)
-	c.SetBottomMargin(0.2)
+	c.SetBottomMargin(0.20)
+	c.SetRightMargin(0.2)
 
 	ch1 = histname.split("sharing_")[2].split("_")[0]
 	ch2 = histname.split("sharing_")[2].split("_")[1]
@@ -209,7 +215,8 @@ def clean2D(histname):
 
 	hist = f.Get(histname)
 
-	hist.GetXaxis().SetTitleOffset(1.0)
+	hist.GetXaxis().SetTitleOffset(1.15)
+	hist.GetZaxis().SetTitleOffset(1.1)
 	hist.GetXaxis().SetNdivisions(505)
 	hist.GetYaxis().SetNdivisions(505)
 
@@ -218,12 +225,13 @@ def clean2D(histname):
 	hist.GetXaxis().SetLabelSize(0.06)
 	hist.GetYaxis().SetLabelSize(0.06)
 
-	hist.GetZaxis().SetNdivisions(505)
+	#hist.GetZaxis().SetNdivisions(505)
 	hist.GetZaxis().SetTitleSize(0.06)
 	hist.GetZaxis().SetLabelSize(0.05)
 
-	hist.GetXaxis().SetTitle(" Ch {} Amplitude [mV]".format(channel(ch1)))
-	hist.GetYaxis().SetTitle(" Ch {} Amplitude [mV]".format(channel(ch2)))
+	hist.GetXaxis().SetTitle("Ch {} Amplitude [mV]".format(channel(ch1)))
+	hist.GetYaxis().SetTitle("Ch {} Amplitude [mV]".format(channel(ch2)))
+	hist.GetZaxis().SetTitle("Events")
 
 	hist.Draw("COLZ")
 	c.Print("plots/charge_sharing/{}.png".format(histname))

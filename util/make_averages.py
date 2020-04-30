@@ -13,6 +13,8 @@ ROOT.gStyle.SetTitleSize(0.06,"xyz")
 ROOT.gStyle.SetTitleSize(0.06,"t")
 ROOT.gStyle.SetPadBottomMargin(0.14)
 ROOT.gStyle.SetPadLeftMargin(0.14)
+ROOT.gStyle.SetPadTickX(1)
+ROOT.gStyle.SetPadTickY(1)
 ROOT.gStyle.SetTitleOffset(1,'y')
 ROOT.gStyle.SetLegendTextSize(0.035)
 ROOT.gStyle.SetGridStyle(3)
@@ -37,10 +39,10 @@ def cleanHist(hist,i):
     if i == 0:
     	hist.SetMarkerColor(col)
     	hist.SetMarkerStyle(20)
-    hist.GetXaxis().SetTitleSize(0.05)
-    hist.GetYaxis().SetTitleSize(0.05)
-    hist.GetXaxis().SetLabelSize(0.04)
-    hist.GetYaxis().SetLabelSize(0.04)
+    hist.GetXaxis().SetTitleSize(0.06)
+    hist.GetYaxis().SetTitleSize(0.06)
+    hist.GetXaxis().SetLabelSize(0.05)
+    hist.GetYaxis().SetLabelSize(0.05)
     hist.GetXaxis().SetNdivisions(505)
     hist.GetYaxis().SetNdivisions(505)
     return
@@ -52,28 +54,10 @@ def channel(name):
     else : return -1
 
 def label(name):
-	if "20325_20375" in name: return "Ch {}: 20.325 < x < 20.375 mm".format(channel(name))
-	if "20375_20425" in name: return "Ch {}: 20.375 < x < 20.425 mm".format(channel(name))
-	if "20425_20475" in name: return "Ch {}: 20.425 < x < 20.475 mm".format(channel(name))
-	if "20475_20525" in name: return "Ch {}: 20.475 < x < 20.525 mm".format(channel(name))
-	if "20525_20575" in name: return "Ch {}: 20.525 < x < 20.575 mm".format(channel(name))
-	if "20575_20625" in name: return "Ch {}: 20.575 < x < 20.625 mm".format(channel(name))
-	if "20625_20675" in name: return "Ch {}: 20.625 < x < 20.675 mm".format(channel(name))
-	if "20675_20725" in name: return "Ch {}: 20.675 < x < 20.725 mm".format(channel(name))
-	if "2064_2066" in name: return "|x-x_{center}| = 0   #mum" #.format(channel(name))
-	if "2062_2064" in name: return "|x-x_{center}| = 20  #mum" #.format(channel(name))
-	if "2060_2062" in name: return "|x-x_{center}| = 40  #mum" #.format(channel(name))
-	if "2058_2060" in name: return "|x-x_{center}| = 60  #mum" #.format(channel(name))
-	if "2056_2058" in name: return "|x-x_{center}| = 80  #mum" #.format(channel(name))
-	if "2054_2056" in name: return "|x-x_{center}| = 100 #mum" #.format(channel(name))
-	if "2052_2054" in name: return "|x-x_{center}| = 120 #mum" #.format(channel(name))
-	if "2050_2052" in name: return "|x-x_{center}| = 140 #mum" #.format(channel(name))
-	if "2048_2050" in name: return "|x-x_{center}| = 160 #mum" #.format(channel(name))
-	if "2046_2048" in name: return "|x-x_{center}| = 180 #mum" #.format(channel(name))
-	if "2044_2046" in name: return "|x-x_{center}| = 200 #mum" #.format(channel(name))
-	if "2042_2044" in name: return "|x-x_{center}| = 220 #mum" #.format(channel(name))
-	if "2040_2042" in name: return "|x-x_{center}| = 240 #mum" #.format(channel(name))
-	if "2038_2040" in name: return "|x-x_{center}| = 250 #mum" #.format(channel(name))
+	if "h_threehits_sig_ch0" in name: return "Channel 4"
+	if "h_threehits_sig_ch1" in name: return "Channel 13"
+	if "h_threehits_sig_ch2" in name: return "Channel 12"
+	if "h_threehits_sig_ch3" in name: return "Photek"
 
 	if "20649_20651" in name: return "|x-x_{center}| = 0 #mum"
 	if "20624_20627" in name: return "|x-x_{center}| = 25 #mum"
@@ -190,9 +174,12 @@ def overlay_ratios(names,filename):
 	    c.Print("averages/{}_prof.png".format(name))
 
 	    
-	c = ROOT.TCanvas()
+	c = ROOT.TCanvas(filename,"",800,800)
+	c.SetLeftMargin(0.2)
+	c.SetBottomMargin(0.21)
+	c.SetRightMargin(0.12)
 	dy = 0.04*len(profiles)
-	leg1 = ROOT.TLegend(0.65,0.5-dy,0.88,0.5)
+	leg1 = ROOT.TLegend(0.5,0.55-dy,0.86,0.55)
 	leg1.SetBorderSize(0)
 	leg2 = ROOT.TLegend(0.15,0.5-dy,0.43,0.5)
 	leg2.SetBorderSize(0)
@@ -206,22 +193,98 @@ def overlay_ratios(names,filename):
 	    if i==0 : profile.Draw("histc") 
 	    else : profile.Draw("histcsame")
 
-	profiles[0].GetXaxis().SetTitle("time - t_{photek} [s]")
-	profiles[0].GetYaxis().SetTitle("channel 13 voltage [mV]")
+	profiles[0].GetXaxis().SetTitle("Time - t_{photek} [ns]")
+	profiles[0].GetYaxis().SetTitle("Voltage [mV]")
+	profiles[0].GetYaxis().SetTitleOffset(1.5)
 
-	profiles[0].GetYaxis().SetRangeUser(-700,50)
-	profiles[0].GetXaxis().SetRangeUser(2.5e-9,6.0e-9)
+	profiles[0].GetYaxis().SetRangeUser(-700,100)
+	profiles[0].GetXaxis().SetRangeUser(0.0,10.0)
 
 	leg1.Draw()
 	c.Print("averages/{}.png".format(filename))
+	c.Print("averages/{}.pdf".format(filename))
 	#leg1.Clear()
 
 	profiles[0].GetYaxis().SetRangeUser(-600,50)
-	profiles[0].GetXaxis().SetRangeUser(3.0e-9,4.9e-9)
+	profiles[0].GetXaxis().SetRangeUser(3.0,4.9)
 	leg1.Draw()
 	c.Print("averages/{}zoom.png".format(filename))
+	c.Print("averages/{}zoom.pdf".format(filename))
 
 	return
+
+
+def cluster_waveforms(names,filename):
+   
+	c = ROOT.TCanvas()
+	profiles = []
+	labels = []
+	for i,name in enumerate(names):
+	    hist = f.Get(name)
+	
+	    labels.append(label(name))
+	    
+	    #hist.RebinX()
+	    #hist.RebinY()
+	    profile = hist.ProfileX("profx"+name)
+	    #profile.Rebin()
+	    profiles.append(profile)
+	    cleanHist(profile,0)
+
+	    hist.Draw("COLZ")
+	    profile.Draw("same")
+	    c.Print("averages/{}_prof.png".format(name))
+
+	    
+	c = ROOT.TCanvas(filename,"",800,800)
+	c.SetLeftMargin(0.2)
+	c.SetBottomMargin(0.21)
+	c.SetRightMargin(0.12)
+	dy = 0.05*len(profiles)
+	leg1 = ROOT.TLegend(0.55,0.5-dy,0.86,0.5)
+	leg1.SetBorderSize(0)
+	leg1.SetTextSize(0.045)
+	leg2 = ROOT.TLegend(0.15,0.5-dy,0.43,0.5)
+	leg2.SetBorderSize(0)
+	leg2.SetTextSize(0.045)
+
+	for i,profile in enumerate(profiles):
+	    cleanHist(profile,i+1)
+	    
+	    #profile.GetYaxis().SetRangeUser(0,1.1)
+
+	    leg1.AddEntry(profile,labels[i],"l")
+	    leg2.AddEntry(profile,labels[i],"l")
+	    if i==0 : profile.Draw("histc") 
+	    else : profile.Draw("histcsame")
+
+	profiles[0].GetXaxis().SetTitle("Time - t_{photek} [ns]")
+	profiles[0].GetYaxis().SetTitle("Voltage [mV]")
+
+	profiles[0].GetYaxis().SetRangeUser(-700,100)
+	profiles[0].GetXaxis().SetRangeUser(0.0,10.0)
+	profiles[0].GetYaxis().SetTitleOffset(1.4)
+
+	leg1.Draw()
+	c.Print("averages/{}.png".format(filename))
+	c.Print("averages/{}.pdf".format(filename))
+	#leg1.Clear()
+
+	profiles[0].GetYaxis().SetRangeUser(-700,50)
+	profiles[0].GetXaxis().SetRangeUser(3.0,4.9)
+	leg1.Draw()
+	c.Print("averages/{}zoom.png".format(filename))
+	c.Print("averages/{}zoom.pdf".format(filename))
+
+	return
+
+names=[]
+names.append("h_threehits_sig_ch0")
+names.append("h_threehits_sig_ch1")
+names.append("h_threehits_sig_ch2")
+#names.append("h_threehits_sig_ch3")
+cluster_waveforms(names,"threehit_signals")
+
 # main 
 names = []
 make_profile("h_ch0_amp_v_x")	
@@ -237,38 +300,7 @@ make_profile("h_ch2_amp_v_x")
 make_profile("h_ch2_tpeak_v_x")
 make_profile("h_ch2_tdiff_v_x")
 #
-##names.append("h_sig_ch1_20675_20725")
-#names.append("h_sig_ch1_20625_20675")
-#names.append("h_sig_ch1_20575_20625")
-#names.append("h_sig_ch1_20525_20575")
-#names.append("h_sig_ch1_20475_20525")
-##names.append("h_sig_ch1_20375_20425")
-##names.append("h_sig_ch1_20425_20475")
-##names.append("h_sig_ch1_20325_20375")
 
-#names.append("h_sig_ch1_2038_2040")	
-#names.append("h_sig_ch1_2040_2042")	
-#names.append("h_sig_ch1_2042_2044")	
-#names.append("h_sig_ch1_2044_2046")	
-#names.append("h_sig_ch1_2046_2048")	
-#names.append("h_sig_ch1_2048_2050")
-
-#names.append("h_sig_ch1_2064_2066")
-#names.append("h_sig_ch1_2062_2064")	
-#names.append("h_sig_ch1_2060_2062")	
-#names.append("h_sig_ch1_2058_2060")	
-#names.append("h_sig_ch1_2056_2058")	
-#names.append("h_sig_ch1_2054_2056")	
-#names.append("h_sig_ch1_2052_2054")	
-#names.append("h_sig_ch1_2050_2052")	
-
-
-#names.append("h_sig_ch1_20649_20651")
-#names.append("h_sig_ch1_20599_20601")
-#names.append("h_sig_ch1_20549_20551")
-#names.append("h_sig_ch1_20499_20501")
-##names.append("h_sig_ch1_20449_20451")
-#overlay_ratios(names,"average_signal_ch1")
 names = []
 names.append("h_sig_ch1_20649_20651")
 names.append("h_sig_ch1_20624_20627")
