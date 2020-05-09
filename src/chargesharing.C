@@ -68,6 +68,14 @@ void Analysis::charge_sharing(std::string cfg, int ch1,int ch2=-1,int ch3=-1)
 		float sum_charge = amp[ch1]+amp[ch2]+amp[ch3];
 		plotter.Plot1D(Form("chargesharing_threehits_%i_%i_%i_sum_amp" ,ch1,ch2,ch3),   ";Sum Amplitude [mV]"   , sum_charge , 50, 0, 3000);
 
+		plotter.Plot1D(Form("chargesharing_threehits_%i_%i_%i_ch%i_chargefrac" ,ch1,ch2,ch3,ch1),   ";Sum Amplitude [mV]"   , amp[ch1]/sum_charge , 50, 0, 1.0);
+		plotter.Plot1D(Form("chargesharing_threehits_%i_%i_%i_ch%i_chargefrac" ,ch1,ch2,ch3,ch2),   ";Sum Amplitude [mV]"   , amp[ch2]/sum_charge , 50, 0, 1.0);
+		plotter.Plot1D(Form("chargesharing_threehits_%i_%i_%i_ch%i_chargefrac" ,ch1,ch2,ch3,ch3),   ";Sum Amplitude [mV]"   , amp[ch3]/sum_charge , 50, 0, 1.0);
+		
+		plotter.Plot2D(Form("chargesharing_threehits_%i_%i_%i_ch%i_chargefrac_v_xpos" ,ch1,ch2,ch3,ch1),   ";Amplitude Fraction;x [mm]" ,  x_dut[dut], amp[ch1]/sum_charge , 50, min_X, max_X, 50, 0, 1.0);
+		plotter.Plot2D(Form("chargesharing_threehits_%i_%i_%i_ch%i_chargefrac_v_xpos" ,ch1,ch2,ch3,ch2),   ";Amplitude Fraction;x [mm]" ,  x_dut[dut], amp[ch2]/sum_charge , 50, min_X, max_X, 50, 0, 1.0);
+		plotter.Plot2D(Form("chargesharing_threehits_%i_%i_%i_ch%i_chargefrac_v_xpos" ,ch1,ch2,ch3,ch3),   ";Amplitude Fraction;x [mm]" ,  x_dut[dut], amp[ch3]/sum_charge , 50, min_X, max_X, 50, 0, 1.0);
+
 	}
 
 }

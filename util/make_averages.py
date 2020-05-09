@@ -54,9 +54,9 @@ def channel(name):
     else : return -1
 
 def label(name):
-	if "h_threehits_sig_ch0" in name: return "Channel 4"
-	if "h_threehits_sig_ch1" in name: return "Channel 13"
-	if "h_threehits_sig_ch2" in name: return "Channel 12"
+	if "h_threehits_sig_ch0" in name: return "Center Strip"
+	if "h_threehits_sig_ch1" in name: return "Right Strip"
+	if "h_threehits_sig_ch2" in name: return "Left Strip"
 	if "h_threehits_sig_ch3" in name: return "Photek"
 
 	if "20649_20651" in name: return "|x-x_{center}| = 0 #mum"
@@ -258,7 +258,7 @@ def cluster_waveforms(names,filename):
 	    if i==0 : profile.Draw("histc") 
 	    else : profile.Draw("histcsame")
 
-	profiles[0].GetXaxis().SetTitle("Time - t_{photek} [ns]")
+	profiles[0].GetXaxis().SetTitle("Time [ns]")
 	profiles[0].GetYaxis().SetTitle("Voltage [mV]")
 
 	profiles[0].GetYaxis().SetRangeUser(-700,100)

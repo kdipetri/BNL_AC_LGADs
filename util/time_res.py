@@ -74,6 +74,16 @@ def label(obj):
         if "2" in ch: return "Channel 12"        
     return ""
 
+def paper_label(i,len):
+    if len == 3: 
+        if i==2: return "Leading Channel"
+        if i==1: return "2nd Leading Channel"
+        if i==0: return "3rd Leading Channel"
+    elif len==2:
+        if i==1: return "Leading Channel"
+        if i==0: return "2rd Leading Channel"        
+    return ""
+
 def get_time_res(name):
     ROOT.gStyle.SetOptStat(0)
     ROOT.gStyle.SetOptFit(0)
@@ -95,6 +105,7 @@ def get_time_res(name):
 
 
     if "deltaT"  in name: 
+        #hist.Rebin()
         if "deltaTun" in name : f1 = ROOT.TF1("f1_"+name,"gaus",2.85,3.85)
         else                  : f1 = ROOT.TF1("f1_"+name,"gaus",-0.5,0.5)              
         hist.Fit(f1,"Q")
@@ -128,46 +139,90 @@ def get_comparison(hists,fits,name):
     c.SetLeftMargin(0.2)
 
     dy = len(hists)*0.06
-    if "deltaT" in name     : leg = ROOT.TLegend(0.40,0.86-dy,0.86,0.86)
+    if "deltaT" in name     : leg = ROOT.TLegend(0.25,0.86-dy,0.86,0.86)
     elif "slewrate" in name : leg = ROOT.TLegend(0.35,0.86-dy,0.86,0.86)
     elif "rmsnoise" in name : leg = ROOT.TLegend(0.35,0.86-dy,0.86,0.86)
     else                    : leg = ROOT.TLegend(0.55,0.86-dy,0.86,0.86)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.045)
 
-
     ymax = 0
+    labels=[]
     for i,hist in enumerate(hists): 
         
         # color handling
         icol = colorindex(hist)
-        cleanHist(hist,icol)
+        cleanHist(hist,i)
         if i==0: hist.Draw("hist")
         else : hist.Draw("histsame")
-        lab = label(hist)
+        labels.append(paper_label(i,len(hists)))
         if hist.GetMaximum() > ymax: ymax = hist.GetMaximum()
         if len(fits) > 0: 
             fits[i].SetLineColor(colors[icol])
+            #fits[i].SetLineStyle(1)
             fits[i].Draw("same")
-            t0_str = ": #sigma={:.1f} ps".format(fits[i].GetParameter(2)*1e3)
+            #t0_str = ": #sigma={:.1f} ps".format(fits[i].GetParameter(2)*1e3)
             #t0_str = ": t0={:.1f} ps, #sigma={:.1f} ps".format(fits[i].GetParameter(1)*1e3, fits[i].GetParameter(2)*1e3)
-            lab+= t0_str
-        if "slewrate" in name :
-            mean = hist.GetMean()
-            mean_str = ": mean slewrate = {:.0f} [mV/ns]".format(mean)
-            lab+= mean_str
-        if "rmsnoise" in name:
-            mean = hist.GetMean()
-            mean_str = ": rms noise = {:.0f} [mV]".format(mean)
-            lab+= mean_str
+            #lab+= t0_str
+        #if "slewrate" in name :
+        #    mean = hist.GetMean()
+        #    mean_str = ": mean slewrate = {:.0f} [mV/ns]".format(mean)
+        #    lab+= mean_str
+        #if "rmsnoise" in name:
+        #    mean = hist.GetMean()
+        #    mean_str = ": rms noise = {:.0f} [mV]".format(mean)
+        #    lab+= mean_str
 
-        leg.AddEntry(hist,lab, "l") 
+        #leg.AddEntry(hist,lab, "l") 
+    if len(hists)==3: leg.AddEntry(hists[2],labels[2],"l")
+    leg.AddEntry(hists[1],labels[1],"l")
+    leg.AddEntry(hists[0],labels[0],"l")
     leg.Draw()
     hists[0].SetMaximum(ymax*1.3)
+    if "deltaTcor" in name: hists[0].GetXaxis().SetRangeUser(-0.4,0.4)
     c.Print("plots/time_res/compare_{}.png".format(name))
     c.Print("plots/time_res/compare_{}.pdf".format(name))
 
 
+def get_comparison_timeCorr(hists,name):
+    ROOT.gStyle.SetOptStat(0)
+    ROOT.gStyle.SetOptFit(0)
+    c = ROOT.TCanvas(name,"",900,800)
+    c.SetLeftMargin(0.2)
+
+    dy = (len(hists)-1)*0.06
+    if "deltaT" in name     : leg = ROOT.TLegend(0.25,0.86-dy,0.86,0.86)
+    leg.SetBorderSize(0)
+    leg.SetTextSize(0.045)
+
+    hists[0].Add(hists[1])
+    ymax = 0
+    labels=[]
+    for i,hist in enumerate(hists): 
+        if i==1: continue
+        
+        # color handling
+        if i ==0 :icol = 3
+        else : icol = 1 
+        hist.Scale(1.0/hist.Integral(0,-1))
+        cleanHist(hist,icol)
+        if i==0: hist.Draw("hist")
+        else : hist.Draw("histsame")
+        labels.append(paper_label(i,len(hists)))
+        if hist.GetMaximum() > ymax: ymax = hist.GetMaximum()
+        f1 = ROOT.TF1("f1_"+hist.GetName(),"gaus",-0.5,0.5)    
+        hist.Fit(f1,"Q")
+        f1.SetLineColor(colors[icol])      
+        f1.Draw("same")
+
+    leg.AddEntry(hists[2],"Leading Channel","l")
+    leg.AddEntry(hists[0],"Subleading Channels","l")
+    leg.Draw()
+    hists[0].SetMaximum(ymax*1.3)
+    hists[0].GetYaxis().SetTitle("Fraction of Events")
+    if "deltaTcor" in name: hists[0].GetXaxis().SetRangeUser(-0.4,0.4)
+    c.Print("plots/time_res/clean_compare_{}.png".format(name))
+    c.Print("plots/time_res/clean_compare_{}.pdf".format(name))
 
 
 
@@ -191,14 +246,14 @@ for ch1 in range(0,3):
 
         hist1, fit1 = get_time_res("timeres_twohits_%i_%i_ch%i_deltaTun"%(ch1,ch2,ch1))
         hist2, fit2 = get_time_res("timeres_twohits_%i_%i_ch%i_deltaTun"%(ch1,ch2,ch2))
-        two_hists   = [hist1,hist2]
-        two_fits    = [fit1 ,fit2 ]
+        two_hists   = [hist2,hist1]
+        two_fits    = [fit2 ,fit1 ]
         get_comparison(two_hists,two_fits,"timeres_twohits_%i_%i_deltaTun"%(ch1,ch2))
 
         hist1, fit1 = get_time_res("timeres_twohits_%i_%i_ch%i_deltaTcor"%(ch1,ch2,ch1))
         hist2, fit2 = get_time_res("timeres_twohits_%i_%i_ch%i_deltaTcor"%(ch1,ch2,ch2))
-        two_hists   = [hist1,hist2]
-        two_fits    = [fit1 ,fit2 ]
+        two_hists   = [hist2,hist1]
+        two_fits    = [fit2 ,fit1 ]
         get_comparison(two_hists,two_fits,"timeres_twohits_%i_%i_deltaTcorr"%(ch1,ch2))
 
         #hist1, fit1 = get_time_res("timeres_twohits_%i_%i_ch%i_deltaTcor2"%(ch1,ch2,ch1))
@@ -209,31 +264,31 @@ for ch1 in range(0,3):
 
         hist1 = get_time_res("timeres_twohits_%i_%i_ch%i_amp"%(ch1,ch2,ch1))
         hist2 = get_time_res("timeres_twohits_%i_%i_ch%i_amp"%(ch1,ch2,ch2))
-        two_hists   = [hist1,hist2]
+        two_hists   = [hist2,hist1]
         two_fits    = []
         get_comparison(two_hists,two_fits,"timeres_twohits_%i_%i_amp"%(ch1,ch2))
 
         hist1 = get_time_res("timeres_twohits_%i_%i_ch%i_slewrate"%(ch1,ch2,ch1))
         hist2 = get_time_res("timeres_twohits_%i_%i_ch%i_slewrate"%(ch1,ch2,ch2))
-        two_hists   = [hist1,hist2]
+        two_hists   = [hist2,hist1]
         two_fits    = []
         get_comparison(two_hists,two_fits,"timeres_twohits_%i_%i_slewrate"%(ch1,ch2))
 
         hist1 = get_time_res("timeres_twohits_%i_%i_ch%i_risetime"%(ch1,ch2,ch1))
         hist2 = get_time_res("timeres_twohits_%i_%i_ch%i_risetime"%(ch1,ch2,ch2))
-        two_hists   = [hist1,hist2]
+        two_hists   = [hist2,hist1]
         two_fits    = []
         get_comparison(two_hists,two_fits,"timeres_twohits_%i_%i_risetime"%(ch1,ch2))
 
         hist1 = get_time_res("timeres_twohits_%i_%i_ch%i_rmsnoise"%(ch1,ch2,ch1))
         hist2 = get_time_res("timeres_twohits_%i_%i_ch%i_rmsnoise"%(ch1,ch2,ch2))
-        two_hists   = [hist1,hist2]
+        two_hists   = [hist2,hist1]
         two_fits    = []
         get_comparison(two_hists,two_fits,"timeres_twohits_%i_%i_rmsnoise"%(ch1,ch2))
 
         hist1 = get_time_res("timeres_twohits_%i_%i_ch%i_jitter"%(ch1,ch2,ch1))
         hist2 = get_time_res("timeres_twohits_%i_%i_ch%i_jitter"%(ch1,ch2,ch2))
-        two_hists   = [hist1,hist2]
+        two_hists   = [hist2,hist1]
         two_fits    = []
         get_comparison(two_hists,two_fits,"timeres_twohits_%i_%i_jitter"%(ch1,ch2))
 
@@ -255,16 +310,17 @@ for ch1 in range(0,3):
             hist1, fit1 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_deltaTun"%(ch1,ch2,ch3,ch1))
             hist2, fit2 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_deltaTun"%(ch1,ch2,ch3,ch2))
             hist3, fit3 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_deltaTun"%(ch1,ch2,ch3,ch3))
-            three_hists = [hist1,hist2,hist3]
-            three_fits  = [fit1 ,fit2 ,fit3 ]
+            three_hists = [hist3,hist2,hist1]
+            three_fits  = [fit3 ,fit2 ,fit1 ]
             get_comparison(three_hists,three_fits,"timeres_threehits_%i_%i_%i_deltaTun"%(ch1,ch2,ch3))
 
             hist1, fit1 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_deltaTcor"%(ch1,ch2,ch3,ch1))
             hist2, fit2 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_deltaTcor"%(ch1,ch2,ch3,ch2))
             hist3, fit3 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_deltaTcor"%(ch1,ch2,ch3,ch3))
-            three_hists = [hist1,hist2,hist3]
-            three_fits  = [fit1 ,fit2 ,fit3 ]
+            three_hists = [hist3,hist2,hist1]
+            three_fits  = [fit3 ,fit2 ,fit1 ]
             get_comparison(three_hists,three_fits,"timeres_threehits_%i_%i_%i_deltaTcorr"%(ch1,ch2,ch3))
+            get_comparison_timeCorr(three_hists,"timeres_threehits_%i_%i_%i_deltaTcorr"%(ch1,ch2,ch3))
 
             #hist1, fit1 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_deltaTcor2"%(ch1,ch2,ch3,ch1))
             #hist2, fit2 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_deltaTcor2"%(ch1,ch2,ch3,ch2))
@@ -276,35 +332,35 @@ for ch1 in range(0,3):
             hist1 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_jitter"%(ch1,ch2,ch3,ch1))
             hist2 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_jitter"%(ch1,ch2,ch3,ch2))
             hist3 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_jitter"%(ch1,ch2,ch3,ch3))
-            three_hists = [hist1,hist2,hist3]
+            three_hists = [hist3,hist2,hist1]
             three_fits  = []
             get_comparison(three_hists,three_fits,"timeres_threehits_%i_%i_%i_jitter"%(ch1,ch2,ch3))
 
             hist1 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_rmsnoise"%(ch1,ch2,ch3,ch1))
             hist2 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_rmsnoise"%(ch1,ch2,ch3,ch2))
             hist3 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_rmsnoise"%(ch1,ch2,ch3,ch3))
-            three_hists = [hist1,hist2,hist3]
+            three_hists = [hist3,hist2,hist1]
             three_fits  = []
             get_comparison(three_hists,three_fits,"timeres_threehits_%i_%i_%i_rmsnoise"%(ch1,ch2,ch3))
 
             hist1 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_slewrate"%(ch1,ch2,ch3,ch1))
             hist2 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_slewrate"%(ch1,ch2,ch3,ch2))
             hist3 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_slewrate"%(ch1,ch2,ch3,ch3))
-            three_hists = [hist1,hist2,hist3]
+            three_hists = [hist3,hist2,hist1]
             three_fits  = []
             get_comparison(three_hists,three_fits,"timeres_threehits_%i_%i_%i_slewrate"%(ch1,ch2,ch3))
 
             hist1 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_risetime"%(ch1,ch2,ch3,ch1))
             hist2 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_risetime"%(ch1,ch2,ch3,ch2))
             hist3 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_risetime"%(ch1,ch2,ch3,ch3))
-            three_hists = [hist1,hist2,hist3]
+            three_hists = [hist3,hist2,hist1]
             three_fits  = []
             get_comparison(three_hists,three_fits,"timeres_threehits_%i_%i_%i_risetime"%(ch1,ch2,ch3))
 
             hist1 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_amp"%(ch1,ch2,ch3,ch1))
             hist2 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_amp"%(ch1,ch2,ch3,ch2))
             hist3 = get_time_res("timeres_threehits_%i_%i_%i_ch%i_amp"%(ch1,ch2,ch3,ch3))
-            three_hists = [hist1,hist2,hist3]
+            three_hists = [hist3,hist2,hist1]
             three_fits  = []
             get_comparison(three_hists,three_fits,"timeres_threehits_%i_%i_%i_amp"%(ch1,ch2,ch3))
             

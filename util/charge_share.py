@@ -90,7 +90,8 @@ def get_distribution(name):
     ROOT.gStyle.SetOptStat(0)
     ROOT.gStyle.SetOptFit(0)
     hist = f.Get(name)
-    c = ROOT.TCanvas()
+    c = ROOT.TCanvas(name,"",900,800)
+    c.SetLeftMargin(0.2)
     leg = ROOT.TLegend(0.37,0.88-0.05,0.88,0.88)
 
     cleanHist(hist,0)
@@ -99,8 +100,10 @@ def get_distribution(name):
 
     if "sum_amp"  in name: 
         f1 = ROOT.TF1("f1_"+name,"landau",0,3000)
-        hist.Scale(1.0/hist.Integral(0,-1))
+        #hist.Scale(1.0/hist.Integral(0,-1))
         hist.Fit(f1,"Q")
+        hist.GetYaxis().SetTitle("Events")
+        hist.GetXaxis().SetTitle("Amplitude Sum [mV]")
         f1.Draw("same")
 
     #if "xpos"  in name:
@@ -111,7 +114,10 @@ def get_distribution(name):
     #    hist.Rebin()
 
     c.Print("plots/charge_sharing/{}.png".format(name))
-    if "sum_amp" in name: return hist,f1
+   
+    if "sum_amp" in name: 
+    	c.Print("plots/charge_sharing/{}.pdf".format(name))
+    	return hist,f1
     else : return hist
 
     
@@ -235,6 +241,7 @@ def clean2D(histname):
 
 	hist.Draw("COLZ")
 	c.Print("plots/charge_sharing/{}.png".format(histname))
+	c.Print("plots/charge_sharing/{}.pdf".format(histname))
     
 
 hist1 = get_distribution("chargesharing_threehits_0_1_2_ch0_amp")	

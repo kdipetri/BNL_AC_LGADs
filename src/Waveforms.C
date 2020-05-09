@@ -256,6 +256,7 @@ void Analysis::Loop(std::string cfg)
    		f1->Draw("same");
    		std::cout << "MPV :" << f1->GetParameter(1) << std::endl;
    		c1->Print(Form("plots/dc_pad/dc_charge.png"));
+   		c1->Print(Form("plots/dc_pad/dc_charge.pdf"));
 	
 		c1->Clear();		
 	}
