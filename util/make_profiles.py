@@ -4,10 +4,8 @@ ROOT.gStyle.SetOptFit(0)
 ROOT.gROOT.SetBatch(ROOT.kTRUE)
 ROOT.gStyle.SetLabelFont(42,"xyz")
 ROOT.gStyle.SetLabelSize(0.05,"xyz")
-#ROOT.gStyle.SetTitleFont(42)
 ROOT.gStyle.SetTitleFont(42,"xyz")
 ROOT.gStyle.SetTitleFont(42,"t")
-#ROOT.gStyle.SetTitleSize(0.05)
 ROOT.gStyle.SetTitleSize(0.06,"xyz")
 ROOT.gStyle.SetTitleSize(0.06,"t")
 ROOT.gStyle.SetPadBottomMargin(0.14)
@@ -19,13 +17,28 @@ ROOT.gStyle.SetLegendTextSize(0.035)
 ROOT.gStyle.SetGridStyle(3)
 ROOT.gStyle.SetGridColor(14)
 ROOT.gStyle.SetOptFit(1)
-one = ROOT.TColor(2001,0.906,0.153,0.094)
-two = ROOT.TColor(2002,0.906,0.533,0.094)
-three = ROOT.TColor(2003,0.086,0.404,0.576)
-four =ROOT.TColor(2004,0.071,0.694,0.18)
-five =ROOT.TColor(2005,0.388,0.098,0.608)
-six=ROOT.TColor(2006,0.906,0.878,0.094)
-colors = [1,2001,2002,2003,2004,2005,2006,6,2,3,4,6,7,5,1,8,9,29,38,46,1,2001,2002,2003,2004,2005,2006]
+one   = ROOT.TColor(2001,143/255.,45 /255.,86/255.,"darkPurple")#quinacridone magenta
+two   = ROOT.TColor(2002,119/255.,104/255.,174/255.,"blahBlue")#blue-violet
+three = ROOT.TColor(2003,239/255.,71 /255.,111/255.,"pinkRed")#paradise pink
+four  = ROOT.TColor(2004,247/255.,178/255.,103/255.,"orange")#orange
+five  = ROOT.TColor(2005,42 /255.,157/255.,143/255.,"PersianGreen")# persian green
+six   = ROOT.TColor(2006,38 /255.,70 /255.,83 /255.,"Charcol")# charcol
+seven = ROOT.TColor(2007,116/255.,165/255.,127/255.,"Green")#forest green
+eight = ROOT.TColor(2008,233/255.,196/255.,106/255.,"Maize")# maize
+nine  = ROOT.TColor(2009,8/255.,103/255.,136/255.,"RussianViolet")#russian violet 
+ten   = ROOT.TColor(2010,231/255.,111/255.,81 /255.,"TerraCotta")# terra cotta
+colors = [] #[2001,2002,2003,2004,2005,2006,2007,2008,2009,2010]
+colors.append(ROOT.kBlack)
+colors.append(2003)#paradise
+colors.append(2004)#orange
+colors.append(2005)#persian green
+colors.append(2002)#blue-violet
+colors.append(2001)#quinacridone magenta
+colors.append(2010)#terra cotta
+colors.append(2008)#maize
+colors.append(2007)#forest green
+colors.append(2009)#bluesapphire
+colors.append(2006)#charcol
 
 #f = ROOT.TFile.Open("profiles/amplitudes_safe.root")
 f = ROOT.TFile.Open("output/hists_cfg_4_13_12.root")
@@ -108,8 +121,35 @@ def overlay_ratios(names,filename):
         profile.Write()
 
 
-    txt = ROOT.TPaveText(0.20,0.86,0.5,0.86-0.06, "NDC")
-    txt.SetTextAlign(13)
+
+    ymax=1
+    lin1 = ROOT.TLine(20.55+0.04,0,20.55+0.04,ymax)
+    lin1.SetLineStyle(3)
+    lin1.SetLineColor(colors[1])
+    lin1.Draw()
+    lin2 = ROOT.TLine(20.55-0.04,0,20.55-0.04,ymax)
+    lin2.SetLineStyle(3)
+    lin2.SetLineColor(colors[1])
+    lin2.Draw()
+    lin3 = ROOT.TLine(20.65+0.04,0,20.65+0.04,ymax)
+    lin3.SetLineStyle(3)
+    lin3.SetLineColor(colors[2])
+    #lin3.Draw()
+    lin4 = ROOT.TLine(20.65-0.04,0,20.65-0.04,ymax)
+    lin4.SetLineStyle(3)
+    lin4.SetLineColor(colors[2])
+    lin4.Draw()
+    lin5 = ROOT.TLine(20.45+0.04,0,20.45+0.04,ymax)
+    lin5.SetLineStyle(3)
+    lin5.SetLineColor(colors[3])
+    lin5.Draw()
+    lin6 = ROOT.TLine(20.45-0.04,0,20.45-0.04,ymax)
+    lin6.SetLineStyle(3)
+    lin6.SetLineColor(colors[3])
+    #lin6.Draw()
+
+    txt = ROOT.TPaveText(0.20,0.86-0.07,0.5,0.86, "NDC")
+    txt.SetTextAlign(12)
     txt.SetTextFont(42)
     txt.SetTextSize(0.05)
     txt.SetFillColor(0)
@@ -118,6 +158,7 @@ def overlay_ratios(names,filename):
     txt.Draw()
     txt.Draw()
     leg.Draw()
+
     c.Print("profiles/{}.png".format(filename))
     c.Print("profiles/{}.pdf".format(filename))
 

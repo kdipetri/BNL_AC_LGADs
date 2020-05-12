@@ -1,4 +1,6 @@
 import ROOT
+import langaus as lg
+
 ROOT.gStyle.SetOptStat(1)
 ROOT.gStyle.SetOptFit(1)
 ROOT.gROOT.SetBatch(ROOT.kTRUE)
@@ -17,14 +19,28 @@ ROOT.gStyle.SetLegendTextSize(0.035)
 ROOT.gStyle.SetGridStyle(3)
 ROOT.gStyle.SetGridColor(14)
 ROOT.gStyle.SetOptFit(1)
-one = ROOT.TColor(2001,0.906,0.153,0.094)
-two = ROOT.TColor(2002,0.906,0.533,0.094)
-three = ROOT.TColor(2003,0.086,0.404,0.576)
-four =ROOT.TColor(2004,0.071,0.694,0.18)
-five =ROOT.TColor(2005,0.388,0.098,0.608)
-six=ROOT.TColor(2006,0.906,0.878,0.094)
-seven=ROOT.TColor(2007,0.99,0.677,0.614)
-colors = [1,2001,2002,2003,2004,2005,2006,2007,6,2,3,4,6,7,5,1,8,9,29,38,46,1,2001,2002,2003,2004,2005,2006]
+one   = ROOT.TColor(2001,143/255.,45 /255.,86/255.,"darkPurple")#quinacridone magenta
+two   = ROOT.TColor(2002,119/255.,104/255.,174/255.,"blahBlue")#blue-violet
+three = ROOT.TColor(2003,239/255.,71 /255.,111/255.,"pinkRed")#paradise pink
+four  = ROOT.TColor(2004,247/255.,178/255.,103/255.,"orange")#orange
+five  = ROOT.TColor(2005,42 /255.,157/255.,143/255.,"PersianGreen")# persian green
+six   = ROOT.TColor(2006,38 /255.,70 /255.,83 /255.,"Charcol")# charcol
+seven = ROOT.TColor(2007,116/255.,165/255.,127/255.,"Green")#forest green
+eight = ROOT.TColor(2008,233/255.,196/255.,106/255.,"Maize")# maize
+nine  = ROOT.TColor(2009,8/255.,103/255.,136/255.,"RussianViolet")#russian violet 
+ten   = ROOT.TColor(2010,231/255.,111/255.,81 /255.,"TerraCotta")# terra cotta
+colors = [] #[2001,2002,2003,2004,2005,2006,2007,2008,2009,2010]
+colors.append(ROOT.kBlack)
+colors.append(2003)#paradise
+colors.append(2004)#orange
+colors.append(2005)#persian green
+colors.append(2002)#blue-violet
+colors.append(2001)#quinacridone magenta
+colors.append(2010)#terra cotta
+colors.append(2008)#maize
+colors.append(2007)#forest green
+colors.append(2009)#bluesapphire
+colors.append(2006)#charcol
 
 f = ROOT.TFile.Open("output/hists_cfg_4_13_12.root")
 def cleanHist(hist,i,opt=""):
@@ -87,38 +103,56 @@ def label(obj):
     return ""
 
 def get_distribution(name):
-    ROOT.gStyle.SetOptStat(0)
-    ROOT.gStyle.SetOptFit(0)
-    hist = f.Get(name)
-    c = ROOT.TCanvas(name,"",900,800)
-    c.SetLeftMargin(0.2)
-    leg = ROOT.TLegend(0.37,0.88-0.05,0.88,0.88)
+	ROOT.gStyle.SetOptStat(0)
+	ROOT.gStyle.SetOptFit(0)
+	hist = f.Get(name)
+	c = ROOT.TCanvas(name,"",900,800)
+	c.SetLeftMargin(0.2)
+	leg = ROOT.TLegend(0.37,0.88-0.05,0.88,0.88)
 
-    cleanHist(hist,0)
-    hist.Draw("hist") 
-    lab = label(hist)
+	cleanHist(hist,0)
+	hist.SetMaximum(600)
+	hist.Draw("hist") 
+	lab = label(hist)
 
-    if "sum_amp"  in name: 
-        f1 = ROOT.TF1("f1_"+name,"landau",0,3000)
-        #hist.Scale(1.0/hist.Integral(0,-1))
-        hist.Fit(f1,"Q")
-        hist.GetYaxis().SetTitle("Events")
-        hist.GetXaxis().SetTitle("Amplitude Sum [mV]")
-        f1.Draw("same")
+	if "sum_amp"  in name: 
+		fitter = lg.LanGausFit()
+		f1 = fitter.fit(hist,(0,3000))
 
-    #if "xpos"  in name:
-    #	hist.Rebin()
-    #    leg.AddEntry(hist,lab,"l")
-    #    leg.Draw()
-    #else:
-    #    hist.Rebin()
+		#f1 = ROOT.TF1("f1_"+name,"landau",0,3000)
+		#hist.Scale(1.0/hist.Integral(0,-1))
+		hist.Fit(f1,"Q")
+		hist.GetYaxis().SetTitle("Events")
+		hist.GetXaxis().SetTitle("Amplitude Sum [mV]")
+		f1.Draw("same")
 
-    c.Print("plots/charge_sharing/{}.png".format(name))
-   
-    if "sum_amp" in name: 
-    	c.Print("plots/charge_sharing/{}.pdf".format(name))
-    	return hist,f1
-    else : return hist
+		mpv = f1.GetParameter(1)
+		err = f1.GetParError(1)
+		text = "MPV: {:.0f} #pm {:.0f} mV".format(mpv,err)
+		y=0.88
+		
+		txt = ROOT.TPaveText(0.5,0.82,0.86,0.82-0.06, "NDC")
+		txt.SetTextAlign(13)
+		txt.SetTextFont(42)
+		txt.SetTextSize(0.05)
+		txt.SetFillColor(0)
+		txt.SetBorderSize(0)
+		txt.AddText(text);
+		txt.Draw()
+
+	#if "xpos"  in name:
+	#	hist.Rebin()
+	#    leg.AddEntry(hist,lab,"l")
+	#    leg.Draw()
+	#else:
+	#    hist.Rebin()
+
+	c.Print("plots/charge_sharing/{}.png".format(name))
+	
+	if "sum_amp" in name: 
+		c.Print("plots/charge_sharing/{}.pdf".format(name))
+		return hist,f1
+	else : return hist
 
     
 # main 
@@ -204,6 +238,8 @@ def do_stack(hists,name):
 	leg1.Draw()
 	leg2.Draw()
 	leg3.Draw()
+	  
+
 	#hists[0].SetMaximum(ymax*1.3)
 	c.Print("plots/charge_sharing/stack_{}.png".format(name))
 	c.Print("plots/charge_sharing/stack_{}.pdf".format(name))
