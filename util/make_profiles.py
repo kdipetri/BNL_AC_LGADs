@@ -97,10 +97,11 @@ def overlay_ratios(names,filename):
 
         
     c = ROOT.TCanvas()
-    dy = 0.06*len(profiles)
-    leg = ROOT.TLegend(0.5,0.86-dy,0.86,0.86)
+    dy = 0.07 #*len(profiles)
+    leg = ROOT.TLegend(0.2,0.8-dy,0.8,0.86)
     leg.SetBorderSize(0)
     leg.SetTextSize(0.05)
+    leg.SetNColumns(3)
     for i,profile in enumerate(profiles):
 
         #profile.GetXaxis().SetRangeUser(20.4,20.7)
@@ -115,12 +116,14 @@ def overlay_ratios(names,filename):
         #if i==0 : profile.Draw("hist") 
         #else : profile.Draw("histsame")
 
-        leg.AddEntry(profile,labels[i],"l")
+        
 
         fout.cd()
         profile.Write()
 
-
+    leg.AddEntry(profiles[2],labels[2],"l")
+    leg.AddEntry(profiles[0],labels[0],"l")
+    leg.AddEntry(profiles[1],labels[1],"l")
 
     ymax=1
     lin1 = ROOT.TLine(20.55+0.04,0,20.55+0.04,ymax)
@@ -148,15 +151,15 @@ def overlay_ratios(names,filename):
     lin6.SetLineColor(colors[3])
     #lin6.Draw()
 
-    txt = ROOT.TPaveText(0.20,0.86-0.07,0.5,0.86, "NDC")
-    txt.SetTextAlign(12)
-    txt.SetTextFont(42)
-    txt.SetTextSize(0.05)
-    txt.SetFillColor(0)
-    txt.SetBorderSize(0)
-    txt.AddText("Three hit clusters");
-    txt.Draw()
-    txt.Draw()
+    #txt = ROOT.TPaveText(0.20,0.86-0.07,0.5,0.86, "NDC")
+    #txt.SetTextAlign(12)
+    #txt.SetTextFont(42)
+    #txt.SetTextSize(0.05)
+    #txt.SetFillColor(0)
+    #txt.SetBorderSize(0)
+    #txt.AddText("Three hit clusters");
+    #txt.Draw()
+    #txt.Draw()
     leg.Draw()
 
     c.Print("profiles/{}.png".format(filename))
